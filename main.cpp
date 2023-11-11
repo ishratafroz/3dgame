@@ -377,10 +377,10 @@ int main()
         rotateZMatrix = glm::rotate(identityMatrix, glm::radians(rotateAngle_Z), glm::vec3(0.0f, 0.0f, 1.0f));
         scaleMatrix = glm::scale(identityMatrix, glm::vec3(scale_X, scale_Y, scale_Z));
         alTogether = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
-        float baseHeight = 8.1; float width = 6;  float length = 2;
+        float baseHeight = 8.1; float width = 3;  float length = 2;
         model = glm::mat4(1.0f);
         //Ground
-        model = transforamtion(-8, -4, -10, width*6 , baseHeight, length);
+        model = transforamtion(-6, -3, -10, width*4 , baseHeight, length);
         model = alTogether * model;
         cube.drawCubeWithTexture(lightingShaderWithTexture, model);
         ourShader.use();
@@ -394,8 +394,8 @@ int main()
     }
 
     Shader lightingShaderWithTexture("vertexShaderForPhongShadingWithTexture.vs", "fragmentShaderForPhongShadingWithTexture.fs");
-    string dgameover = "gameover.jpg";
-    string sgameover = "gameover.jpg";
+    string dgameover = "gameover.png";
+    string sgameover = "gameover.png";
     unsigned int diff1 = loadTexture(dgameover.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int spec1 = loadTexture(sgameover.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube gameover = Cube(diff1, spec1, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
@@ -545,22 +545,35 @@ int main()
         scaleMatrix = glm::scale(identityMatrix, glm::vec3(scale_X, scale_Y, scale_Z));
         model = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
         lightingShader.setMat4("model", model);
+         lightingShaderWithTexture.use();
+      
 
 
-        lightingShaderWithTexture.use();
-        //glBindVertexArray(cubeVAO);
-        //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        //glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+
+
+
+
+
+
 
         if (score == 0)
         {
+            identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+            glm::mat4  alTogether;
+            translateMatrix = glm::translate(identityMatrix, glm::vec3(translate_X, translate_Y, translate_Z));
+            rotateXMatrix = glm::rotate(identityMatrix, glm::radians(rotateAngle_X), glm::vec3(1.0f, 0.0f, 0.0f));
+            rotateYMatrix = glm::rotate(identityMatrix, glm::radians(rotateAngle_Y), glm::vec3(0.0f, 1.0f, 0.0f));
+            rotateZMatrix = glm::rotate(identityMatrix, glm::radians(rotateAngle_Z), glm::vec3(0.0f, 0.0f, 1.0f));
+            scaleMatrix = glm::scale(identityMatrix, glm::vec3(scale_X, scale_Y, scale_Z));
+            alTogether = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
+            float baseHeight = 4.1; float width = 3;  float length = 2;
+            model = glm::mat4(1.0f);
+            //Ground
+            model = transforamtion(-2, -2, -10, width , baseHeight, length);
+            model = alTogether * model;
 
-            glm::mat4 modelMatrixForContainer = glm::mat4(1.0f);
-            modelMatrixForContainer =
-                glm::translate(model, glm::vec3(-1.5f, -0.4f, -2.8f)) *
-                glm::scale(model, glm::vec3(3.0, 2.0, 2.0));
-
-            gameover.drawCubeWithTexture(lightingShaderWithTexture, modelMatrixForContainer);
+            gameover.drawCubeWithTexture(lightingShaderWithTexture, model);
         }
         else
         {//texture
