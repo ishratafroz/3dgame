@@ -339,12 +339,9 @@ int main()
         
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // be sure to activate shader when setting uniforms/drawing objects
         lightingShaderWithTexture.use();
         lightingShaderWithTexture.setVec3("viewPos", camera.Position);
-
-        // pass projection matrix to shader (note that in this case it could change every frame)
+        
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         //glm::mat4 projection = glm::ortho(-2.0f, +2.0f, -1.5f, +1.5f, 0.1f, 100.0f);
         lightingShaderWithTexture.setMat4("projection", projection);
@@ -354,7 +351,6 @@ int main()
         //glm::mat4 view = basic_camera.createViewMatrix();
         lightingShaderWithTexture.setMat4("view", view);
 
-        // Modelling Transformation
         glm::mat4 identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4 translateMatrix, rotateXMatrix, rotateYMatrix, rotateZMatrix, scaleMatrix, model;
         translateMatrix = glm::translate(identityMatrix, glm::vec3(translate_X, translate_Y, translate_Z));
@@ -363,9 +359,16 @@ int main()
         rotateZMatrix = glm::rotate(identityMatrix, glm::radians(rotateAngle_Z), glm::vec3(0.0f, 0.0f, 1.0f));
         scaleMatrix = glm::scale(identityMatrix, glm::vec3(scale_X, scale_Y, scale_Z));
         model = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
-
         lightingShaderWithTexture.use();
 
+        pointlight1.setUpPointLight(lightingShaderWithTexture);
+        // point light 2
+        pointlight2.setUpPointLight(lightingShaderWithTexture);
+        // point light 3
+        pointlight3.setUpPointLight(lightingShaderWithTexture);
+        // point light 4
+        pointlight4.setUpPointLight(lightingShaderWithTexture);
+        
         identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4  alTogether;
         translateMatrix = glm::translate(identityMatrix, glm::vec3(translate_X, translate_Y, translate_Z));
@@ -380,6 +383,9 @@ int main()
         model = transforamtion(-8, -4, -10, width * 5, baseHeight, length);
         model = alTogether * model;
         cube.drawCubeWithTexture(lightingShaderWithTexture, model);
+        ourShader.use();
+        ourShader.setMat4("projection", projection);
+        ourShader.setMat4("view", view);
         glfwSwapBuffers(window); glfwPollEvents();
 
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
