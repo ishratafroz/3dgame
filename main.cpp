@@ -89,6 +89,7 @@ bool dLight = false;
 bool sLight = false;
 bool sphere_true = true;
 
+
 // camera
 Camera camera(glm::vec3(0.0f, 1.1f, 5.2f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -184,6 +185,8 @@ float point_z = 0.0f;
 float deltaTime = 0.0f;    // time between current frame and last frame
 float lastFrame = 0.0f;
 float point_x, point_x2, point_x3;
+int cnt = 1;
+int num = 0;
 
 int main()
 {
@@ -327,17 +330,42 @@ int main()
     scoreboard.setRadius(0.1);
     Cylinder cylinder = Cylinder();
 
-    while (!glfwWindowShouldClose(window) && mainGameState == SPLASH_SCREEN) {
+    Shader lightingShaderWithTexture("vertexShaderForPhongShadingWithTexture.vs", "fragmentShaderForPhongShadingWithTexture.fs");
+    //Shader ourShader("vertexShader.vs", "fragmentShader.fs");
+    string diffuseMapPath = "untit1.png";
+    string specularMapPath = "untit1.png";
+    unsigned int diffMap = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    unsigned int specMap = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube cube = Cube(diffMap, specMap, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+    
+    
+    
+    string dgameover = "gameover.jpg";
+    string sgameover = "gameover.jpg";
+    unsigned int diff1 = loadTexture(dgameover.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    unsigned int spec1 = loadTexture(sgameover.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube gameover = Cube(diff1, spec1, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
-        Shader lightingShaderWithTexture("vertexShaderForPhongShadingWithTexture.vs", "fragmentShaderForPhongShadingWithTexture.fs");
-        Shader ourShader("vertexShader.vs", "fragmentShader.fs");
-        string diffuseMapPath = "untit1.png";
-        string specularMapPath = "untit1.png";
-        unsigned int diffMap = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-        unsigned int specMap = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-        Cube cube = Cube(diffMap, specMap, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-        
-        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    string dgrass = "grass.png";
+    string sgrass = "grass.png";
+    unsigned int diff2 = loadTexture(dgrass.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    unsigned int spec2 = loadTexture(sgrass.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube grass = Cube(diff2, spec2, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+
+    string dbuild = "dbuilding1.jpg";
+    string sbuild = "dbuilding1.jpg";
+    unsigned int diff3 = loadTexture(dbuild.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    unsigned int spec3 = loadTexture(sbuild.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube building = Cube(diff3, spec3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+
+    string dbuild1 = "sbuilding1.jpg";
+    string sbuild1 = "sbuilding1.jpg";
+    unsigned int diff4 = loadTexture(dbuild1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    unsigned int spec4 = loadTexture(sbuild1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube building1 = Cube(diff4, spec4, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+
+    while (!glfwWindowShouldClose(window) && mainGameState == SPLASH_SCREEN) {
+ glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         lightingShaderWithTexture.use();
         lightingShaderWithTexture.setVec3("viewPos", camera.Position);
@@ -393,30 +421,7 @@ int main()
         }
     }
 
-    Shader lightingShaderWithTexture("vertexShaderForPhongShadingWithTexture.vs", "fragmentShaderForPhongShadingWithTexture.fs");
-    string dgameover = "gameover.png";
-    string sgameover = "gameover.png";
-    unsigned int diff1 = loadTexture(dgameover.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    unsigned int spec1 = loadTexture(sgameover.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    Cube gameover = Cube(diff1, spec1, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
-    string dgrass = "grass.png";
-    string sgrass = "grass.png";
-    unsigned int diff2 = loadTexture(dgrass.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    unsigned int spec2 = loadTexture(sgrass.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    Cube grass = Cube(diff2, spec2, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-
-    string dbuild = "dbuilding1.jpg";
-    string sbuild = "dbuilding1.jpg";
-    unsigned int diff3 = loadTexture(dbuild.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    unsigned int spec3 = loadTexture(sbuild.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    Cube building = Cube(diff3, spec3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-
-    string dbuild1 = "sbuilding1.jpg";
-    string sbuild1 = "sbuilding1.jpg";
-    unsigned int diff4 = loadTexture(dbuild1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    unsigned int spec4 = loadTexture(sbuild1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    Cube building1 = Cube(diff4, spec4, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
     std::random_device rd;
     mt19937 gen(rd());
@@ -546,10 +551,6 @@ int main()
         model = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
         lightingShader.setMat4("model", model);
          lightingShaderWithTexture.use();
-      
-
-
-        
 
 
 
@@ -561,22 +562,25 @@ int main()
         {
             identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
             glm::mat4  alTogether;
-            translateMatrix = glm::translate(identityMatrix, glm::vec3(translate_X, translate_Y, translate_Z));
-            rotateXMatrix = glm::rotate(identityMatrix, glm::radians(rotateAngle_X), glm::vec3(1.0f, 0.0f, 0.0f));
-            rotateYMatrix = glm::rotate(identityMatrix, glm::radians(rotateAngle_Y), glm::vec3(0.0f, 1.0f, 0.0f));
-            rotateZMatrix = glm::rotate(identityMatrix, glm::radians(rotateAngle_Z), glm::vec3(0.0f, 0.0f, 1.0f));
-            scaleMatrix = glm::scale(identityMatrix, glm::vec3(scale_X, scale_Y, scale_Z));
-            alTogether = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
-            float baseHeight = 4.1; float width = 3;  float length = 2;
+            translateMatrix = glm::translate(identityMatrix, glm::vec3(-1.5f, -0.5f, -4.0f));
+            scaleMatrix = glm::scale(identityMatrix, glm::vec3(3.0, 3.0, 3.0));
             model = glm::mat4(1.0f);
-            //Ground
-            model = transforamtion(-2, -2, -10, width , baseHeight, length);
-            model = alTogether * model;
-
+            model = translateMatrix * scaleMatrix;
             gameover.drawCubeWithTexture(lightingShaderWithTexture, model);
         }
-        else
-        {//texture
+        if(score>0)
+        {
+            float baseHeight = 4.0f;
+            float width = 2.0f;
+            float length = 2.0f;
+            float b1_x = point_x + 1.0f;
+            float b1_z = block1 + flor + 1.0f;
+            float b2_x = point_x2 - 1.0f;
+            float b2_z = block2 + flor + 2.0f;
+            float b3_x = point_x3 - 3.5f;
+            float b3_z = block2 + flor - 5.0f;
+
+            //texture
             glm::mat4 modelforgrass1 = model * 
                 glm::translate(model, glm::vec3(-7.0, -0.95, block1 + flor)) *
                 glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
@@ -587,14 +591,16 @@ int main()
              //building texture
 
            glm::mat4 modelforbuilding1=glm::translate(glm::mat4(1.0f)
-               , glm::vec3(point_x + 0.9f, -1.0f, block1 + flor + 1.0f)) *
-               glm::scale(glm::mat4(1.0f), glm::vec3(2.12, 4.1, 2.1));
+               , glm::vec3(b1_x, -1.0f,b1_z)) *
+               glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
           glm::mat4 modelforbuilding2 = glm::translate(glm::mat4(1.0f),
-              glm::vec3(point_x2 - 1.01f, -1.0f, block2 + flor + 1.0f)) *
-              glm::scale(glm::mat4(1.0f), glm::vec3(2.12, 4.1, 2.1));        
+              glm::vec3(b2_x, -1.0f, b2_z)) *
+              glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
+          //float b3_x = point_x3 - 3.5f;
+          //float b3_z = block2 + flor - 1.0f;
           glm::mat4 modelforbuilding3 = 
- glm::translate(glm::mat4(1.0f), glm::vec3(point_x3 - 3.5f, -1.0f,30.0 + flor + 3.5f))
-    * glm::scale(glm::mat4(1.0f), glm::vec3(2.12, 4.1, 2.1));
+ glm::translate(glm::mat4(1.0f), glm::vec3(b3_x, -1.0f, b3_z))
+    * glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
           beach(cubeVAO, lightingShader, model);
           grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass1);
           grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass2);
@@ -778,7 +784,7 @@ void bed(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 model)
 }
 void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
 {
-    flor += 0.05f;
+    flor += 0.03f;
     if (flor >= 20.0f)
     {
         if (block1 == -20.f)
@@ -786,7 +792,6 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             std::random_device rd;
             mt19937 gen(rd());
             uniform_real_distribution<float> dis(-3.0f, 3.0f);
-
             point_x = dis(gen);
             block1 = -40.0f;
             block2 = -20.0f;
@@ -796,11 +801,12 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             std::random_device rd;
             mt19937 gen(rd());
             uniform_real_distribution<float> dis(-3.0f, 3.0f);
-
             point_x2 = dis(gen);
             block1 = -20.0f;
             block2 = -40.0f;
         }
+        cnt++;
+        num = cnt - 1;
         flor = 0.0f;
 
     }
@@ -824,7 +830,6 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
     
 
     //building
-
     baseHeight = 4.0f;
     width = 2.0f;
     length = 2.0f;
@@ -833,94 +838,344 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
     float b1_z = block1 + flor + 1.0f;
 
 
-    if (b1_x <= plane_x + 1.0f && b1_x >= plane_x - 1.0f)
+    if (b1_x <= plane_x && b1_x + 2.0f >= plane_x)
     {
 
         if (b1_z >= -8.5f)
         {
-            printf("lagse 1");
-            if (score == 1)
-                score = 0;
-            else if (score == 2)
-                score = 1;
-            else if (score == 3)
-                score = 2;
-            else if (score == 4)
-                score = 3;
-            else if (score == 5)
-                score = 4;
-            // printf("%d", score);
+            printf("lagse 1\n");
+            if (num != cnt)
+            {
+                if (score>0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
 
             if (plane_x >= 0.0)
                 plane_x -= 5.0f;
             else
                 plane_x += 5.0f;
+            printf("%d\n", score);
         }
 
     }
+    else if (b1_x <= plane_x - 0.5f && b1_x + 2.0f >= plane_x - 0.5)
+    {
+        if (b1_z >= -6.0f)
+        {
+            printf("lagse 1\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
 
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    else if (b1_x <= plane_x - 1.5f && b1_x + 2.0f >= plane_x - 1.5)
+    {
+        if (b1_z >= -6.0f)
+        {
+            printf("lagse 1\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    else if (b1_x <= plane_x + 0.5f && b1_x + 2.0f >= plane_x + 0.5)
+    {
+        if (b1_z >= -6.0f)
+        {
+            printf("lagse 1\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    else if (b1_x <= plane_x + 1.5f && b1_x + 2.0f >= plane_x + 1.5)
+    {
+        if (b1_z >= -6.0f)
+        {
+            printf("lagse 1\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
 
     float b2_x = point_x2 - 1.0f;
-    float b2_z = block2 + flor + 1.0f;
-
-
-    if (b2_x <= plane_x + 1.0f && b2_x >= plane_x - 1.0f)
+    float b2_z = block2 + flor + 2.0f;
+    if (b2_x <= plane_x && b2_x + 2.0f >= plane_x)
     {
 
         if (b2_z >= -8.5f)
         {
-            printf("lagse 2");
-            if (score == 1)
-                score = 0;
-            else if (score == 2)
-                score = 1;
-            else if (score == 3)
-                score = 2;
-            else if (score == 4)
-                score = 3;
-            else if (score == 5)
-                score = 4;
-            // printf("%d", score);
+            printf("lagse 2\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
 
             if (plane_x >= 0.0)
                 plane_x -= 5.0f;
             else
                 plane_x += 5.0f;
+            printf("%d\n", score);
         }
 
     }
+    else if (b2_x <= plane_x - 0.5f && b2_x + 2.0f >= plane_x - 0.5)
+    {
+        if (b2_z >= -6.0f)
+        {
+            printf("lagse 2\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    else if (b2_x <= plane_x - 1.5f && b2_x + 2.0f >= plane_x - 1.5)
+    {
+        if (b2_z >= -6.0f)
+        {
+            printf("lagse 2\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    else if (b2_x <= plane_x + 0.5f && b2_x + 2.0f >= plane_x + 0.5)
+    {
+        if (b2_z >= -6.0f)
+        {
+            printf("lagse 2\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    else if (b2_x <= plane_x + 1.5f && b2_x + 2.0f >= plane_x + 1.5)
+    {
+        if (b2_z >= -6.0f)
+        {
+            printf("lagse 2\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    
+
+
+
+
     float b3_x = point_x3 - 3.5f;
-    float b3_z = 30.0 + flor + 3.5f;
-    if (b3_x <= plane_x + 1.0f && b3_x >= plane_x - 1.0f)
+    float b3_z = block2 + flor - 5.0f;
+    if (b3_x <= plane_x && b3_x + 2.0f >= plane_x)
     {
 
         if (b3_z >= -8.5f)
         {
-            printf("lagse 2");
-            if (score == 1)
-                score = 0;
-            else if (score == 2)
-                score = 1;
-            else if (score == 3)
-                score = 2;
-            else if (score == 4)
-                score = 3;
-            else if (score == 5)
-                score = 4;
-            // printf("%d", score);
+            printf("lagse 3\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
 
             if (plane_x >= 0.0)
                 plane_x -= 5.0f;
             else
                 plane_x += 5.0f;
+            printf("%d\n", score);
         }
 
     }
-    scale = glm::scale(model, glm::vec3(width, baseHeight, length));
-    translate = glm::translate(model, glm::vec3(b1_x, -1.0f, b1_z));
+    else if (b3_x <= plane_x - 0.5f && b3_x + 2.0f >= plane_x - 0.5)
+    {
+        if (b3_z >= -6.0f)
+        {
+            printf("lagse 3\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    else if (b3_x <= plane_x - 1.5f && b3_x + 2.0f >= plane_x - 1.5)
+    {
+        if (b3_z >= -6.0f)
+        {
+            printf("lagse 3\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    else if (b3_x <= plane_x + 0.5f && b3_x + 2.0f >= plane_x + 0.5)
+    {
+        if (b3_z >= -6.0f)
+        {
+            printf("lagse 3\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+    else if (b3_x <= plane_x + 1.5f && b3_x + 2.0f >= plane_x + 1.5)
+    {
+        if (b3_z >= -6.0f)
+        {
+            printf("lagse 3\n");
+            if (num != cnt)
+            {
+                if (score > 0)
+                {
+                    score--;
+                }
+                num = cnt;
+            }
+
+            if (plane_x >= 0.0)
+                plane_x -= 5.0f;
+            else
+                plane_x += 5.0f;
+            printf("%d\n", score);
+        }
+    }
+
+   /*
+    scale = glm::scale(model, glm::vec3(0.1f, 5.1f, 0.1f));
+    translate = glm::translate(model, glm::vec3(plane_x-1.5f, -2.0f, -6.5f));
     model = translate * scale;
     drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
-
+    /*
     model = glm::mat4(1.0f);
     scale = glm::scale(model, glm::vec3(width, baseHeight, length));
     translate = glm::translate(model, glm::vec3(b2_x, -1.0f, b2_z));
@@ -932,7 +1187,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
     translate = glm::translate(model, glm::vec3(b3_x, -1.0f, b3_z));
     model = translate * scale;
     drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
-
+    */
 
 }
 
@@ -950,10 +1205,10 @@ void processInput(GLFWwindow* window)
         camera.ProcessKeyboard(BACKWARD, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        plane_x -= 0.1f;
+        plane_x -= 0.05f;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        plane_x += 0.1f;
+        plane_x += 0.05f;
     }
 
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
