@@ -24,6 +24,9 @@
     <ClCompile Include="D:\4 2\graphicslab\opengl\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Chaser---CSE4208-master\Chaser - CSE4208\Tunnel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basic_camera.h">
@@ -51,6 +54,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cylinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sphere2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Chaser---CSE4208-master\Chaser - CSE4208\Tunnel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Chaser---CSE4208-master\Chaser - CSE4208\CurvedRoad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Chaser---CSE4208-master\Chaser - CSE4208\Pyramid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

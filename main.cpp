@@ -9,6 +9,7 @@
 #include "basic_camera.h"
 #include "pointLight.h"
 #include "sphere.h"
+#include "sphere2.h"
 #include "cylinder.h"
 #include <thread>
 #include <chrono>
@@ -17,6 +18,9 @@
 #include "stb_image.h"
 #include "cube.h"
 #include "SpotLight.h"
+//#include <SFML/Audio.hpp>
+#include <map>
+
 using namespace std;
 GLfloat a = 0, b = 0, c = 0, d = 0, e = 0;
 const unsigned int SCR_WIDTH = 800;
@@ -32,13 +36,18 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 unsigned int loadTexture(char const* path, GLenum textureWrappingModeS, GLenum textureWrappingModeT, GLenum textureFilteringModeMin, GLenum textureFilteringModeMax);
-
+void scsToWcs(float sx, float sy, float wcsv[3]);
 void processInput(GLFWwindow* window);
 void drawCube(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 model, float r, float g, float b);
 void bed(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether);
 void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether);
 void sea(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether);
 void tree(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether);
+
+long long nCr(int n, int r);
+void BezierCurve(double t, float xy[2], GLfloat ctrlpoints[], int L);
+unsigned int hollowBezier(GLfloat ctrlpoints[], int L);
+unsigned int loadCubemap(vector<std::string> faces);
 
 glm::mat4 transforamtion(float tx, float ty, float tz, float sx, float sy, float sz) {
     glm::mat4 identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
@@ -50,16 +59,53 @@ glm::mat4 transforamtion(float tx, float ty, float tz, float sx, float sy, float
 }
 
 
-void update(int value)
+GLint viewport[4];
+//float wcsClkDn[3];
+float wcsClkUp[12 * 3] = {
+-0.0700, -6.1400, -5.1000,
+-0.1500, -6.1450, -5.1000,
+-0.2400, -6.1250, -5.1000,
+-0.2550, -6.0200, -5.1000,
+-0.3000, -6.9050, -5.1000,
+-0.3500, -7.8150, -5.1000,
+-0.4050, -7.6750, -5.1000,
+-0.4500, -7.6000, -5.1000,
+-0.4750, -7.5050, -5.1000,
+-0.4050, -7.4250, -5.1000,
+-0.3050, -7.3750, -5.1000,
+-0.3050, -7.3750, -5.1000
+};
+vector <float> cntrlPoints;
+vector <float> coordinates;
+vector <float> normals;
+vector <int> indices;
+vector <float> vertices;
+
+class point
 {
-    a += 20.0; //Plane position takeoff on x axis
-    b -= 10.0; //Road Strip backward movement
-    c += 15; //take off at certain angle on y axis
-    if (b <= -78.0)// moving of run way
-        b = 0.0;
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //glfwSwapBuffers(window);
-    std::this_thread::sleep_for(std::chrono::milliseconds(150));
-}
+public:
+    point()
+    {
+        x = 0;
+        y = 0;
+    }
+    int x;
+    int y;
+} clkpt[2];
+int mouseButtonFlag = 0;
+FILE* fp;
+const double pi = 3.14159265389;
+const int nt = 40;
+const int ntheta = 20;
+bool showControlPoints = true;
+bool loadBezierCurvePoints = false;
+bool showHollowBezier = false;
+bool lineMode = false;
+unsigned int bezierVAO;
+//sound
+
+//sf::SoundBuffer buffer;
+//sf::Sound sound;
 
 // settings
 
@@ -79,15 +125,16 @@ float scale_Z = 1.0;
 float flor = 0.0f;
 float block1 = -20.0f;
 float block2 = -40.0f;
-
+int countt = 0;
 int score = 3;
 bool game = false;
-
+int level2 = 0;
 float plane_x = 0.0f;
 bool pLight = false;
 bool dLight = false;
 bool sLight = false;
 bool sphere_true = true;
+float spare_angle = 10.0f;
 
 
 // camera
@@ -225,9 +272,10 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+    for (int i = 0; i < 36; i++) {
+        cntrlPoints.push_back(wcsClkUp[i]);
 
-    // configure global opengl state
-    // -----------------------------
+    }
     glEnable(GL_DEPTH_TEST);
 
     // build and compile our shader zprogram
@@ -239,6 +287,7 @@ int main()
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
 
+    bezierVAO = hollowBezier(cntrlPoints.data(), ((unsigned int)cntrlPoints.size() / 3) - 1);
 
     float cube_vertices[] = {
         // positions      // normals
@@ -326,8 +375,6 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     Sphere sphere = Sphere();
-    Sphere scoreboard = Sphere();
-    scoreboard.setRadius(0.1);
     Cylinder cylinder = Cylinder();
 
     Shader lightingShaderWithTexture("vertexShaderForPhongShadingWithTexture.vs", "fragmentShaderForPhongShadingWithTexture.fs");
@@ -337,9 +384,7 @@ int main()
     unsigned int diffMap = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int specMap = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube = Cube(diffMap, specMap, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-    
-    
-    
+
     string dgameover = "gameover.jpg";
     string sgameover = "gameover.jpg";
     unsigned int diff1 = loadTexture(dgameover.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -364,12 +409,38 @@ int main()
     unsigned int spec4 = loadTexture(sbuild1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube building1 = Cube(diff4, spec4, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
+
+
+    string dcscore = "white.png";
+    string scscore = "white1.png";
+    unsigned int diff7 = loadTexture(dcscore.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    unsigned int spec7 = loadTexture(scscore.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube scorept = Cube(diff7, diff7, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+    Cube scorept1 = Cube(spec7, spec7, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+    string dsphere = "wall.jpg";
+    string ssphere = "wall.jpg";
+    unsigned int diff5 = loadTexture(dsphere.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    unsigned int spec5 = loadTexture(ssphere.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Sphere2 scoreboard = Sphere2(0.3f, 36, 18, glm::vec3(1.0f, 0.75f, 0.79f), glm::vec3(1.0f, 0.75f, 0.79), glm::vec3(0.8f, 0.6f, 0.63), 32.0f, diff5, spec5, 0.0f, 0.0f, 1.0f, 1.0f);
+
+    string sky = "sky.jpeg";
+    unsigned int skyspec = loadTexture(sky.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Sphere2  sky1 = Sphere2(1.0f, 144, 72, glm::vec3(0, 0.4, 0.9), glm::vec3(0, 0.4, 0.9), glm::vec3(0, 0.4, 0.9), 32.0f, skyspec, skyspec, 0.0f, 0.0f, 1.0f, 1.0f);
+
+
+    string dsphere1 = "golok.jpg";
+    string ssphere1 = "golok.jpg";
+    unsigned int diff6 = loadTexture(dsphere1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    unsigned int spec6 = loadTexture(ssphere1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    //Sphere sphere = Sphere(0.3f, 36, 18, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f, diff5, spec5, 0.0f, 0.0f, 1.0f, 1.0f, diff6, spec6);
+
+
     while (!glfwWindowShouldClose(window) && mainGameState == SPLASH_SCREEN) {
- glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         lightingShaderWithTexture.use();
         lightingShaderWithTexture.setVec3("viewPos", camera.Position);
-        
+
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         //glm::mat4 projection = glm::ortho(-2.0f, +2.0f, -1.5f, +1.5f, 0.1f, 100.0f);
         lightingShaderWithTexture.setMat4("projection", projection);
@@ -396,7 +467,7 @@ int main()
         pointlight3.setUpPointLight(lightingShaderWithTexture);
         // point light 4
         pointlight4.setUpPointLight(lightingShaderWithTexture);
-        
+
         identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4  alTogether;
         translateMatrix = glm::translate(identityMatrix, glm::vec3(translate_X, translate_Y, translate_Z));
@@ -408,7 +479,7 @@ int main()
         float baseHeight = 8.1; float width = 3;  float length = 2;
         model = glm::mat4(1.0f);
         //Ground
-        model = transforamtion(-6, -3, -10, width*4 , baseHeight, length);
+        model = transforamtion(-6, -3, -10, width * 4, baseHeight, length);
         model = alTogether * model;
         cube.drawCubeWithTexture(lightingShaderWithTexture, model);
         ourShader.use();
@@ -420,9 +491,6 @@ int main()
             mainGameState = MAIN_GAME; // Transition to the main game
         }
     }
-
-
-
     std::random_device rd;
     mt19937 gen(rd());
     uniform_real_distribution<float> dis(-3.0f, 3.0f);
@@ -431,6 +499,8 @@ int main()
     point_x = randomVal;
     point_x2 = dis(gen);
     point_x3 = dis(gen);
+
+
     while (!glfwWindowShouldClose(window) && mainGameState == MAIN_GAME)
     {
         // per-frame time logic
@@ -447,6 +517,7 @@ int main()
         // ------
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
@@ -495,7 +566,6 @@ int main()
             lightingShader.setVec3("spotlight.specular", 0.0f, 0.0f, 0.0f);
         }
 
-
         if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
             lightingShader.setBool("dlighton", false);
         //if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
@@ -513,21 +583,9 @@ int main()
 
         if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
             lightingShader.setBool("spotlighton", false);
-
-
-        //pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z,  // position
-        //    1.0f, 1.0f, 1.0f,     // ambient
-        //    1.0f, 1.0f, 1.0f,      // diffuse
-        //    1.0f, 1.0f, 1.0f,        // specular
-        //    1.0f,   //k_c
-        //    0.09f,  //k_l
-        //    0.032f, //k_q
-        //    1,       // light number
-        //    glm::cos(glm::radians(20.5f)),
-        //    glm::cos(glm::radians(25.0f)),
-        //    0, -1, 0
-        // activate shader
         lightingShader.use();
+
+
 
 
         // pass projection matrix to shader (note that in this case it could change every frame)
@@ -550,11 +608,13 @@ int main()
         scaleMatrix = glm::scale(identityMatrix, glm::vec3(scale_X, scale_Y, scale_Z));
         model = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
         lightingShader.setMat4("model", model);
-         lightingShaderWithTexture.use();
+        lightingShaderWithTexture.use();
 
 
-
-
+        lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.0f, 1.0f));
+        lightingShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.0f, 1.0f));
+        lightingShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        lightingShader.setFloat("material.shininess", 32.0f);
 
 
 
@@ -568,7 +628,7 @@ int main()
             model = translateMatrix * scaleMatrix;
             gameover.drawCubeWithTexture(lightingShaderWithTexture, model);
         }
-        if(score>0)
+        if (score > 0)
         {
             float baseHeight = 4.0f;
             float width = 2.0f;
@@ -581,33 +641,34 @@ int main()
             float b3_z = block2 + flor - 5.0f;
 
             //texture
-            glm::mat4 modelforgrass1 = model * 
+            glm::mat4 modelforgrass1 = model *
                 glm::translate(model, glm::vec3(-7.0, -0.95, block1 + flor)) *
                 glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
-        glm::mat4 modelforgrass2=  
-            glm::translate(model, glm::vec3(-7.0, -0.95, block2 + flor)) * 
-            glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
+            glm::mat4 modelforgrass2 =
+                glm::translate(model, glm::vec3(-7.0, -0.95, block2 + flor)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
             bed(cubeVAO, lightingShader, model);
-             //building texture
+            //building texture
 
-           glm::mat4 modelforbuilding1=glm::translate(glm::mat4(1.0f)
-               , glm::vec3(b1_x, -1.0f,b1_z)) *
-               glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
-          glm::mat4 modelforbuilding2 = glm::translate(glm::mat4(1.0f),
-              glm::vec3(b2_x, -1.0f, b2_z)) *
-              glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
-          //float b3_x = point_x3 - 3.5f;
-          //float b3_z = block2 + flor - 1.0f;
-          glm::mat4 modelforbuilding3 = 
- glm::translate(glm::mat4(1.0f), glm::vec3(b3_x, -1.0f, b3_z))
-    * glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
-          beach(cubeVAO, lightingShader, model);
-          grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass1);
-          grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass2);
+            glm::mat4 modelforbuilding1 = glm::translate(glm::mat4(1.0f)
+                , glm::vec3(b1_x, -1.0f, b1_z)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
+            glm::mat4 modelforbuilding2 = glm::translate(glm::mat4(1.0f),
+                glm::vec3(b2_x, -1.0f, b2_z)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
+            //float b3_x = point_x3 - 3.5f;
+            //float b3_z = block2 + flor - 1.0f;
+            glm::mat4 modelforbuilding3 =
+                glm::translate(glm::mat4(1.0f), glm::vec3(b3_x, -1.0f, b3_z))
+                * glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
+            beach(cubeVAO, lightingShader, model);
+            grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass1);
+            grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass2);
 
-          building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding1);
-          building1.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding2);
-          building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding3);
+            building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding1);
+            building1.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding2);
+            if (level2 == 1)
+                building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding3);
 
             if (point)
             {
@@ -633,22 +694,46 @@ int main()
                 point = true;
                 if (score < 5)
                     score++;
+                countt++;
             }
+            //sky
+
+            spare_angle = spare_angle + 0.0f;
+            glm::mat4 modelforsky = glm::mat4(1.0f);
+            scaleMatrix = glm::scale(identityMatrix, glm::vec3(17.0f, 15.0f, 15.0f));
+            modelforsky = glm::translate(identityMatrix, glm::vec3(0.0f, 5.0f, -66.0f)) * glm::rotate(identityMatrix, glm::radians(spare_angle), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::scale(identityMatrix, glm::vec3(50.0f, 40.0f, 30.0f));
+            sky1.drawSphereWithTexture(lightingShader, modelforsky);
 
             //sphere
             glm::mat4 modelForSphere = glm::mat4(1.0f);
             modelForSphere = glm::translate(model, glm::vec3(randomVal, 0.0f, zz));
             sphere.drawSphere(lightingShader, modelForSphere);
-
-
             float xx = 0.0;
             for (int i = 0; i < score; i++)
             {
                 xx += 0.7;
                 glm::mat4 modelForSphere2 = glm::mat4(1.0f);
                 modelForSphere2 = glm::translate(model, glm::vec3(xx + 4.5f, 5.0f, -10.0));
-                scoreboard.drawSphere(lightingShader, modelForSphere2);
+
+                scoreboard.drawSphereWithTexture(lightingShader, modelForSphere2);
             }
+            if (score >= 4)
+            {
+                level2 = 1;
+                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                    , glm::vec3(5.0, 5.4f, -10.0)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0));
+                scorept.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+            }
+            if (score < 4) {
+                level2 = 0;
+                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                    , glm::vec3(5.0, 5.4f, -10.0)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0));
+                scorept1.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+
+            }
+            //printf("%d",score);
         }
 
         //sea(cubeVAO, lightingShader, model); tree(cubeVAO, lightingShader, model);
@@ -704,6 +789,11 @@ int main()
         modelMatrixForContainer = trns * scl;
         // cube.drawCubeWithTexture(lightingShaderWithTexture, modelMatrixForContainer);
 
+        //glBindVertexArray(bezierVAO);
+        //glDrawElements(GL_TRIANGLES,                    // primitive type
+        //    (unsigned int)indices.size(),          // # of indices
+        //    GL_UNSIGNED_INT,                 // data type
+        //    (void*)0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -819,23 +909,22 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
     glm::mat4 translate2 = glm::mat4(1.0f);
     glm::mat4 scale = glm::mat4(1.0f);
     scale = glm::scale(model, glm::vec3(width, baseHeight, length));
-     translate = glm::translate(model, glm::vec3(-7.0, -1.0, block1 + flor));
+    translate = glm::translate(model, glm::vec3(-7.0, -1.0, block1 + flor));
     model = alTogether * translate * scale;
-    drawCube(cubeVAO, lightingShader, model, 0.0, 1.0, 0.0); 
-    
+    //drawCube(cubeVAO, lightingShader, model, 0.0, 1.0, 0.0); 
+
     model = glm::mat4(1.0f);
     translate = glm::translate(model, glm::vec3(-7.0, -1.0, block2 + flor));
     model = translate * scale;
-    drawCube(cubeVAO, lightingShader, model, 0.0, 1.0, 0.0);
-    
-
-    //building
+    //  drawCube(cubeVAO, lightingShader, model, 0.0, 1.0, 0.0);
+      //building
     baseHeight = 4.0f;
     width = 2.0f;
     length = 2.0f;
     model = glm::mat4(1.0f);
     float b1_x = point_x + 1.0f;
     float b1_z = block1 + flor + 1.0f;
+
 
 
     if (b1_x <= plane_x && b1_x + 2.0f >= plane_x)
@@ -846,9 +935,19 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             printf("lagse 1\n");
             if (num != cnt)
             {
-                if (score>0)
+                if (score > 0)
                 {
                     score--;
+                    //if (!buffer.loadFromFile("planecrash.wav"))
+                    //{
+                    //    std::cerr << "Failed to load sound file!" << std::endl;
+                    //}
+                    //else
+                    //{
+                    //    //sound.setBuffer(buffer);
+                    //   // sound.play(); //soundClock.restart();
+                    //}
+
                 }
                 num = cnt;
             }
@@ -859,6 +958,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
                 plane_x += 5.0f;
             printf("%d\n", score);
         }
+
 
     }
     else if (b1_x <= plane_x - 0.5f && b1_x + 2.0f >= plane_x - 0.5)
@@ -871,6 +971,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
                 if (score > 0)
                 {
                     score--;
+
                 }
                 num = cnt;
             }
@@ -892,6 +993,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
                 if (score > 0)
                 {
                     score--;
+
                 }
                 num = cnt;
             }
@@ -913,6 +1015,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
                 if (score > 0)
                 {
                     score--;
+
                 }
                 num = cnt;
             }
@@ -1055,7 +1158,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             printf("%d\n", score);
         }
     }
-    
+
 
 
 
@@ -1170,24 +1273,24 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
         }
     }
 
-   /*
-    scale = glm::scale(model, glm::vec3(0.1f, 5.1f, 0.1f));
-    translate = glm::translate(model, glm::vec3(plane_x-1.5f, -2.0f, -6.5f));
-    model = translate * scale;
-    drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
     /*
-    model = glm::mat4(1.0f);
-    scale = glm::scale(model, glm::vec3(width, baseHeight, length));
-    translate = glm::translate(model, glm::vec3(b2_x, -1.0f, b2_z));
-    model = translate * scale;
-    drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
+     scale = glm::scale(model, glm::vec3(0.1f, 5.1f, 0.1f));
+     translate = glm::translate(model, glm::vec3(plane_x-1.5f, -2.0f, -6.5f));
+     model = translate * scale;
+     drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
+     /*
+     model = glm::mat4(1.0f);
+     scale = glm::scale(model, glm::vec3(width, baseHeight, length));
+     translate = glm::translate(model, glm::vec3(b2_x, -1.0f, b2_z));
+     model = translate * scale;
+     drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
 
-    model = glm::mat4(1.0f);
-    scale = glm::scale(model, glm::vec3(width, baseHeight, length));
-    translate = glm::translate(model, glm::vec3(b3_x, -1.0f, b3_z));
-    model = translate * scale;
-    drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
-    */
+     model = glm::mat4(1.0f);
+     scale = glm::scale(model, glm::vec3(width, baseHeight, length));
+     translate = glm::translate(model, glm::vec3(b3_x, -1.0f, b3_z));
+     model = translate * scale;
+     drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
+     */
 
 }
 
@@ -1403,6 +1506,168 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 
+long long nCr(int n, int r)
+{
+    if (r > n / 2)
+        r = n - r; // because C(n, r) == C(n, n - r)
+    long long ans = 1;
+    int i;
+
+    for (i = 1; i <= r; i++)
+    {
+        ans *= n - r + i;
+        ans /= i;
+    }
+
+    return ans;
+}
+
+//polynomial interpretation for N points
+void BezierCurve(double t, float xy[2], GLfloat ctrlpoints[], int L)
+{
+    double y = 0;
+    double x = 0;
+    t = t > 1.0 ? 1.0 : t;
+    for (int i = 0; i < L + 1; i++)
+    {
+        long long ncr = nCr(L, i);
+        double oneMinusTpow = pow(1 - t, double(L - i));
+        double tPow = pow(t, double(i));
+        double coef = oneMinusTpow * tPow * ncr;
+        x += coef * ctrlpoints[i * 3];
+        y += coef * ctrlpoints[(i * 3) + 1];
+
+    }
+    xy[0] = float(x);
+    xy[1] = float(y);
+}
+
+unsigned int hollowBezier(GLfloat ctrlpoints[], int L)
+{
+    int i, j;
+    float x, y, z, r;                //current coordinates
+    float theta;
+    float nx, ny, nz, lengthInv;    // vertex normal
+    for (int i = 0; i < sizeof(ctrlpoints); i++)
+    {
+        cout << ctrlpoints[i] << endl;
+    }
+
+    const float dtheta = 2 * pi / ntheta;        //angular step size
+
+    float t = 0;
+    float dt = 1.0 / nt;
+    float xy[2];
+
+    for (i = 0; i <= nt; ++i)              //step through y
+    {
+        BezierCurve(t, xy, ctrlpoints, L);
+        r = xy[0];
+        y = xy[1];
+        theta = 0;
+        t += dt;
+        lengthInv = 1.0 / r;
+
+        for (j = 0; j <= ntheta; ++j)
+        {
+            double cosa = cos(theta);
+            double sina = sin(theta);
+            z = r * cosa;
+            x = r * sina;
+
+            coordinates.push_back(x);
+            coordinates.push_back(y);
+            coordinates.push_back(z);
+
+            // normalized vertex normal (nx, ny, nz)
+            // center point of the circle (0,y,0)
+            nx = (x - 0) * lengthInv;
+            ny = (y - y) * lengthInv;
+            nz = (z - 0) * lengthInv;
+
+            normals.push_back(nx);
+            normals.push_back(ny);
+            normals.push_back(nz);
+
+            theta += dtheta;
+        }
+    }
+
+    // generate index list of triangles
+    // k1--k1+1
+    // |  / |
+    // | /  |
+    // k2--k2+1
+
+    int k1, k2;
+    for (int i = 0; i < nt; ++i)
+    {
+        k1 = i * (ntheta + 1);     // beginning of current stack
+        k2 = k1 + ntheta + 1;      // beginning of next stack
+
+        for (int j = 0; j < ntheta; ++j, ++k1, ++k2)
+        {
+            // k1 => k2 => k1+1
+            indices.push_back(k1);
+            indices.push_back(k2);
+            indices.push_back(k1 + 1);
+
+            // k1+1 => k2 => k2+1
+            indices.push_back(k1 + 1);
+            indices.push_back(k2);
+            indices.push_back(k2 + 1);
+        }
+    }
+
+    size_t count = coordinates.size();
+    for (int i = 0; i < count; i += 3)
+    {
+        vertices.push_back(coordinates[i]);
+        vertices.push_back(coordinates[i + 1]);
+        vertices.push_back(coordinates[i + 2]);
+        vertices.push_back(normals[i]);
+        vertices.push_back(normals[i + 1]);
+        vertices.push_back(normals[i + 2]);
+    }
+
+    unsigned int bezierVAO;
+    glGenVertexArrays(1, &bezierVAO);
+    glBindVertexArray(bezierVAO);
+
+    // create VBO to copy vertex data to VBO
+    unsigned int bezierVBO;
+    glGenBuffers(1, &bezierVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, bezierVBO);           // for vertex data
+    glBufferData(GL_ARRAY_BUFFER,                   // target
+        (unsigned int)vertices.size() * sizeof(float), // data size, # of bytes
+        vertices.data(),   // ptr to vertex data
+        GL_STATIC_DRAW);                   // usage
+
+    // create EBO to copy index data
+    unsigned int bezierEBO;
+    glGenBuffers(1, &bezierEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bezierEBO);   // for index data
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,           // target
+        (unsigned int)indices.size() * sizeof(unsigned int),             // data size, # of bytes
+        indices.data(),               // ptr to index data
+        GL_STATIC_DRAW);                   // usage
+
+    // activate attrib arrays
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    // set attrib arrays with stride and offset
+    int stride = 24;     // should be 24 bytes
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, stride, (void*)(sizeof(float) * 3));
+
+    // unbind VAO, VBO and EBO
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    return bezierVAO;
+}
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)

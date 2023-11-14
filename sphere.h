@@ -319,4 +319,3 @@ private:
 
 #endif /* sphere_h */
 
-
