@@ -440,10 +440,10 @@ int main()
 
     Pyramid pyramid("tree.jpg");
     Cylinder1 cylinder1(.1, .1, 1, 16, 20, "treebase.png");
-    glm::vec3 p0(0, 5, 0);
+    glm::vec3 p0(0, 3, 0);
     glm::vec3 p1(0, 2, 0);
-    glm::vec3 p2(7, 0, 0);
-    glm::vec3 p3(7, -10, 0);
+    glm::vec3 p2(8, 0, 0);
+    glm::vec3 p3(8, -18, 0);
     int numSegments = 1000;
     float roadWidth = 1.0f;
     CurvedRoad cr("road.png", p0, p1, p2, p3, numSegments, roadWidth);
@@ -480,6 +480,12 @@ int main()
         pointlight3.setUpPointLight(lightingShaderWithTexture);
         // point light 4
         pointlight4.setUpPointLight(lightingShaderWithTexture);
+        lightingShaderWithTexture.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
+        lightingShaderWithTexture.setVec3("diectionalLight.ambient", .5, .5, .5);
+        lightingShaderWithTexture.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
+        lightingShaderWithTexture.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
+
+        lightingShaderWithTexture.setBool("dlighton", true);
 
         identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4  alTogether;
@@ -546,8 +552,8 @@ int main()
         // point light 4
         pointlight4.setUpPointLight(lightingShader);
 
-        lightingShaderWithTexture.use();
-        lightingShaderWithTexture.setVec3("viewPos", camera.Position);
+       // lightingShaderWithTexture.use();
+        //lightingShaderWithTexture.setVec3("viewPos", camera.Position);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         //glm::mat4 projection = glm::ortho(-2.0f, +2.0f, -1.5f, +1.5f, 0.1f, 100.0f);
@@ -564,8 +570,8 @@ int main()
         pointlight3.setUpPointLight(lightingShader);
         // point light 4
         pointlight4.setUpPointLight(lightingShader);
-        lightingShader.setVec3("diectionalLight.direction", 0.0f, 3.0f, 0.0f);
-        lightingShader.setVec3("diectionalLight.ambient", .2, .2, .2);
+        lightingShader.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
+        lightingShader.setVec3("diectionalLight.ambient", .5, .5, .5);
         lightingShader.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
         lightingShader.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
 
@@ -623,14 +629,19 @@ int main()
         model = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
         lightingShader.setMat4("model", model);
         lightingShaderWithTexture.use();
-
+        
 
         lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.0f, 1.0f));
         lightingShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.0f, 1.0f));
         lightingShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
         lightingShader.setFloat("material.shininess", 32.0f);
 
-        
+        lightingShaderWithTexture.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
+        lightingShaderWithTexture.setVec3("diectionalLight.ambient", .5, .5, .5);
+        lightingShaderWithTexture.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
+        lightingShaderWithTexture.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
+
+        lightingShaderWithTexture.setBool("dlighton", true);
 
         if (score == 0)
         {
@@ -741,7 +752,7 @@ int main()
             spare_angle = spare_angle + 0.0f;
             glm::mat4 modelforsky = glm::mat4(1.0f);
             scaleMatrix = glm::scale(identityMatrix, glm::vec3(17.0f, 15.0f, 15.0f));
-            modelforsky = glm::translate(identityMatrix, glm::vec3(0.0f, 5.0f, -66.0f)) * glm::rotate(identityMatrix, glm::radians(spare_angle), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::scale(identityMatrix, glm::vec3(50.0f, 40.0f, 30.0f));
+            modelforsky = glm::translate(identityMatrix, glm::vec3(0.0f, -4.0f, -66.0f)) * glm::rotate(identityMatrix, glm::radians(spare_angle), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::scale(identityMatrix, glm::vec3(50.0f, 55.0f, 30.0f));
             sky1.drawSphereWithTexture(lightingShaderWithTexture, modelforsky);
 
             //sphere
@@ -770,12 +781,12 @@ int main()
 
             modelfortree = transforamtion(-6.5, 0, -20, 2, 2, 1);
             pyramid.draw(lightingShaderWithTexture, modelfortree);
-            // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+           // // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
             cylinder1.Draw(lightingShaderWithTexture, modelfortree);
 
             modelfortree = transforamtion(-6.5, 0, -10, 2, 2, 1);
             pyramid.draw(lightingShaderWithTexture, modelfortree);
-            // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+           // // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
             cylinder1.Draw(lightingShaderWithTexture, modelfortree);
 
             //printf("%d",score);
@@ -826,6 +837,13 @@ int main()
         pointlight3.setUpPointLight(lightingShaderWithTexture);
         // point light 4
         pointlight4.setUpPointLight(lightingShaderWithTexture);
+
+        lightingShaderWithTexture.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
+        lightingShaderWithTexture.setVec3("diectionalLight.ambient", .5, .5, .5);
+        lightingShaderWithTexture.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
+        lightingShaderWithTexture.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
+
+        lightingShaderWithTexture.setBool("dlighton", true);
 
         glm::mat4 modelMatrixForContainer = glm::mat4(1.0f);
         glm::mat4 trns = glm::translate(identityMatrix, glm::vec3(0.2f, 0.0f, -5.48f));
