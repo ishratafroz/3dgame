@@ -18,6 +18,9 @@
 #include "stb_image.h"
 #include "cube.h"
 #include "SpotLight.h"
+#include "Cylinder1.h"
+#include "Pyramid.h"
+#include "CurvedRoad.h"
 //#include <SFML/Audio.hpp>
 #include <map>
 
@@ -153,9 +156,9 @@ BasicCamera basic_camera(eyeX, eyeY, eyeZ, lookAtX, lookAtY, lookAtZ, V);
 
 // positions of the point lights
 glm::vec3 pointLightPositions[] = {
-    glm::vec3(2.0f,  2.00f,  0.0f),
+    glm::vec3(2.5f,  2.50f,  0.0f),
     glm::vec3(1.5f,  -1.5f,  0.0f),
-    glm::vec3(-2.0f,  2.0f,  0.0f),
+    glm::vec3(-2.50f,  2.5f,  0.0f),
     glm::vec3(-1.5f,  -1.5f,  0.0f)
 };
 //glm::vec3(-0.5, 1, -0.5)
@@ -374,7 +377,7 @@ int main()
     // note that we update the lamp's position attribute's stride to reflect the updated buffer data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    Sphere sphere = Sphere();
+    //Sphere sphere = Sphere();
     Cylinder cylinder = Cylinder();
 
     Shader lightingShaderWithTexture("vertexShaderForPhongShadingWithTexture.vs", "fragmentShaderForPhongShadingWithTexture.fs");
@@ -417,8 +420,8 @@ int main()
     unsigned int spec7 = loadTexture(scscore.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube scorept = Cube(diff7, diff7, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     Cube scorept1 = Cube(spec7, spec7, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-    string dsphere = "wall.jpg";
-    string ssphere = "wall.jpg";
+    string dsphere = "humann.jpg";
+    string ssphere = "humann.jpg";
     unsigned int diff5 = loadTexture(dsphere.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int spec5 = loadTexture(ssphere.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Sphere2 scoreboard = Sphere2(0.3f, 36, 18, glm::vec3(1.0f, 0.75f, 0.79f), glm::vec3(1.0f, 0.75f, 0.79), glm::vec3(0.8f, 0.6f, 0.63), 32.0f, diff5, spec5, 0.0f, 0.0f, 1.0f, 1.0f);
@@ -428,13 +431,23 @@ int main()
     Sphere2  sky1 = Sphere2(1.0f, 144, 72, glm::vec3(0, 0.4, 0.9), glm::vec3(0, 0.4, 0.9), glm::vec3(0, 0.4, 0.9), 32.0f, skyspec, skyspec, 0.0f, 0.0f, 1.0f, 1.0f);
 
 
-    string dsphere1 = "golok.jpg";
-    string ssphere1 = "golok.jpg";
+    string dsphere1 = "lavender.jfif";
+    string ssphere1 = "lavender.jfif";
     unsigned int diff6 = loadTexture(dsphere1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int spec6 = loadTexture(ssphere1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    //Sphere sphere = Sphere(0.3f, 36, 18, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f, diff5, spec5, 0.0f, 0.0f, 1.0f, 1.0f, diff6, spec6);
+    
+    Sphere2 sphere = Sphere2(0.3f, 36, 18, glm::vec3(1.0f, 0.75f, 0.79f), glm::vec3(1.0f, 0.75f, 0.79), glm::vec3(0.8f, 0.6f, 0.63), 32.0f, diff6, spec6, 0.0f, 0.0f, 1.0f, 1.0f);
 
-
+    Pyramid pyramid("tree.jpg");
+    Cylinder1 cylinder1(.1, .1, 1, 16, 20, "treebase.png");
+    glm::vec3 p0(0, 5, 0);
+    glm::vec3 p1(0, 2, 0);
+    glm::vec3 p2(7, 0, 0);
+    glm::vec3 p3(7, -10, 0);
+    int numSegments = 1000;
+    float roadWidth = 1.0f;
+    CurvedRoad cr("road.png", p0, p1, p2, p3, numSegments, roadWidth);
+   
     while (!glfwWindowShouldClose(window) && mainGameState == SPLASH_SCREEN) {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -501,6 +514,7 @@ int main()
     point_x3 = dis(gen);
 
 
+    
     while (!glfwWindowShouldClose(window) && mainGameState == MAIN_GAME)
     {
         // per-frame time logic
@@ -616,7 +630,7 @@ int main()
         lightingShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
         lightingShader.setFloat("material.shininess", 32.0f);
 
-
+        
 
         if (score == 0)
         {
@@ -648,6 +662,10 @@ int main()
                 glm::translate(model, glm::vec3(-7.0, -0.95, block2 + flor)) *
                 glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
             bed(cubeVAO, lightingShader, model);
+            //road
+           glm::mat4  modelforroad = transforamtion(-1, -.94, -2, 1, 1, 1);
+           modelforroad = modelforroad * glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            cr.draw(lightingShaderWithTexture, modelforroad);
             //building texture
 
             glm::mat4 modelforbuilding1 = glm::translate(glm::mat4(1.0f)
@@ -664,12 +682,34 @@ int main()
             beach(cubeVAO, lightingShader, model);
             grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass1);
             grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass2);
-
+            
             building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding1);
+
+            glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                , glm::vec3(5.0, 5.4f, -10.0)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0));
+   
             building1.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding2);
             if (level2 == 1)
                 building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding3);
 
+            if (score >= 4)
+            {
+                level2 = 1;
+                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                    , glm::vec3(3.2, 4.8f, -8.0)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0.1));
+                scorept.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+            }
+            if (score < 4) {
+                level2 = 0;
+                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                    , glm::vec3(3.2, 4.8f, -8.0)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0.1));
+                scorept1.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+
+
+            }
             if (point)
             {
                 std::random_device rd;
@@ -707,32 +747,37 @@ int main()
             //sphere
             glm::mat4 modelForSphere = glm::mat4(1.0f);
             modelForSphere = glm::translate(model, glm::vec3(randomVal, 0.0f, zz));
-            sphere.drawSphere(lightingShader, modelForSphere);
+            sphere.drawSphereWithTexture(lightingShaderWithTexture, modelForSphere);
             float xx = 0.0;
             for (int i = 0; i < score; i++)
             {
                 xx += 0.7;
                 glm::mat4 modelForSphere2 = glm::mat4(1.0f);
-                modelForSphere2 = glm::translate(model, glm::vec3(xx + 4.5f, 5.0f, -10.0));
+                modelForSphere2 = glm::translate(model, glm::vec3(xx + 2.5f, 4.15f, -7.0));
 
-                scoreboard.drawSphereWithTexture(lightingShader, modelForSphere2);
+                scoreboard.drawSphereWithTexture(lightingShaderWithTexture, modelForSphere2);
             }
-            if (score >= 4)
-            {
-                level2 = 1;
-                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
-                    , glm::vec3(5.0, 5.4f, -10.0)) *
-                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0));
-                scorept.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
-            }
-            if (score < 4) {
-                level2 = 0;
-                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
-                    , glm::vec3(5.0, 5.4f, -10.0)) *
-                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0));
-                scorept1.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+            //tree
+           glm::mat4 modelfortree = transforamtion(5.8, 0.5, -12, 2, 2, 1);
+            pyramid.draw(lightingShaderWithTexture, modelfortree);
+           // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            cylinder1.Draw(lightingShaderWithTexture, modelfortree);
 
-            }
+             modelfortree = transforamtion(6.8, 0, -20, 2, 2, 1);
+            pyramid.draw(lightingShaderWithTexture, modelfortree);
+           // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            cylinder1.Draw(lightingShaderWithTexture, modelfortree);
+
+            modelfortree = transforamtion(-6.5, 0, -20, 2, 2, 1);
+            pyramid.draw(lightingShaderWithTexture, modelfortree);
+            // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            cylinder1.Draw(lightingShaderWithTexture, modelfortree);
+
+            modelfortree = transforamtion(-6.5, 0, -10, 2, 2, 1);
+            pyramid.draw(lightingShaderWithTexture, modelfortree);
+            // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            cylinder1.Draw(lightingShaderWithTexture, modelfortree);
+
             //printf("%d",score);
         }
 

@@ -21,10 +21,16 @@
     <ClCompile Include="stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\4 2\graphicslab\opengl\glad.c">
+    <ClCompile Include="Cylinder1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Chaser---CSE4208-master\Chaser - CSE4208\Tunnel.cpp">
+    <ClCompile Include="Pyramid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CurvedRoad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Desktop\opengl\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,13 +65,13 @@
     <ClInclude Include="sphere2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Chaser---CSE4208-master\Chaser - CSE4208\Tunnel.h">
+    <ClInclude Include="Cylinder1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Chaser---CSE4208-master\Chaser - CSE4208\CurvedRoad.h">
+    <ClInclude Include="Pyramid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Chaser---CSE4208-master\Chaser - CSE4208\Pyramid.h">
+    <ClInclude Include="CurvedRoad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\4 2\graphicslab\opengl\include;C:\Users\user\Desktop\SFML-2.6.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\4 2\graphicslab\opengl\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\HP\Desktop\opengl\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\HP\Desktop\opengl\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -112,7 +112,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;sfml-audio.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Users\user\Desktop\SFML-2.6.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -133,21 +133,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Chaser---CSE4208-master\Chaser - CSE4208\Tunnel.cpp" />
-    <ClCompile Include="D:\4 2\graphicslab\opengl\glad.c" />
+    <ClCompile Include="..\..\..\Desktop\opengl\glad.c" />
+    <ClCompile Include="CurvedRoad.cpp" />
+    <ClCompile Include="Cylinder1.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Pyramid.cpp" />
     <ClCompile Include="stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Chaser---CSE4208-master\Chaser - CSE4208\CurvedRoad.h" />
-    <ClInclude Include="..\Chaser---CSE4208-master\Chaser - CSE4208\Pyramid.h" />
-    <ClInclude Include="..\Chaser---CSE4208-master\Chaser - CSE4208\Tunnel.h" />
     <ClInclude Include="basic_camera.h" />
     <ClInclude Include="C:\Users\user\Downloads\foodcourt1\SpotLight.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="cube.h" />
+    <ClInclude Include="CurvedRoad.h" />
     <ClInclude Include="cylinder.h" />
+    <ClInclude Include="Cylinder1.h" />
     <ClInclude Include="pointLight.h" />
+    <ClInclude Include="Pyramid.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="sphere.h" />
     <ClInclude Include="sphere2.h" />
