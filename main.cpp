@@ -661,7 +661,7 @@ int main()
             glm::mat4 modelforgrass2 =
                 glm::translate(model, glm::vec3(-7.0, -0.95, block2 + flor)) *
                 glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
-            bed(cubeVAO, lightingShader, model);
+           bed(cubeVAO, lightingShader, model);
             //road
            glm::mat4  modelforroad = transforamtion(-1, -.94, -2, 1, 1, 1);
            modelforroad = modelforroad * glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -742,7 +742,7 @@ int main()
             glm::mat4 modelforsky = glm::mat4(1.0f);
             scaleMatrix = glm::scale(identityMatrix, glm::vec3(17.0f, 15.0f, 15.0f));
             modelforsky = glm::translate(identityMatrix, glm::vec3(0.0f, 5.0f, -66.0f)) * glm::rotate(identityMatrix, glm::radians(spare_angle), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::scale(identityMatrix, glm::vec3(50.0f, 40.0f, 30.0f));
-            sky1.drawSphereWithTexture(lightingShader, modelforsky);
+            sky1.drawSphereWithTexture(lightingShaderWithTexture, modelforsky);
 
             //sphere
             glm::mat4 modelForSphere = glm::mat4(1.0f);
