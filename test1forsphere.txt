@@ -18,7 +18,7 @@
 #include "stb_image.h"
 #include "cube.h"
 #include "SpotLight.h"
-#include <SFML/Audio.hpp>
+//#include <SFML/Audio.hpp>
 #include <map>
 
 using namespace std;
@@ -103,8 +103,8 @@ bool lineMode = false;
 unsigned int bezierVAO;
 //sound
 
-sf::SoundBuffer buffer;
-sf::Sound sound;
+//sf::SoundBuffer buffer;
+//sf::Sound sound;
 
 // settings
 
@@ -124,15 +124,16 @@ float scale_Z = 1.0;
 float flor = 0.0f;
 float block1 = -20.0f;
 float block2 = -40.0f;
-
+int countt = 0;
 int score = 3;
 bool game = false;
-
+int level2 = 0;
 float plane_x = 0.0f;
 bool pLight = false;
 bool dLight = false;
 bool sLight = false;
 bool sphere_true = true;
+float spare_angle = 10.0f;
 
 
 // camera
@@ -407,12 +408,23 @@ int main()
     unsigned int spec4 = loadTexture(sbuild1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube building1 = Cube(diff4, spec4, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     
+    
+
+    string dcscore = "white.png";
+    string scscore = "white1.png";
+    unsigned int diff7 = loadTexture(dcscore.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    unsigned int spec7 = loadTexture(scscore.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube scorept = Cube(diff7, diff7, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+    Cube scorept1 = Cube(spec7, spec7, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     string dsphere = "wall.jpg";
     string ssphere = "wall.jpg";
     unsigned int diff5 = loadTexture(dsphere.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int spec5 = loadTexture(ssphere.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Sphere2 scoreboard = Sphere2(0.3f, 36, 18, glm::vec3(1.0f, 0.75f, 0.79f), glm::vec3(1.0f, 0.75f, 0.79), glm::vec3(0.8f, 0.6f, 0.63), 32.0f, diff5, spec5, 0.0f, 0.0f, 1.0f, 1.0f);
 
+    string sky = "sky.jpeg";
+    unsigned int skyspec = loadTexture(sky.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Sphere2  sky1 = Sphere2(1.0f, 144, 72, glm::vec3(0,0.4,0.9), glm::vec3(0, 0.4, 0.9), glm::vec3(0, 0.4, 0.9), 32.0f, skyspec, skyspec, 0.0f, 0.0f, 1.0f, 1.0f);
 
 
     string dsphere1 = "golok.jpg";
@@ -659,7 +671,8 @@ int main()
 
           building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding1);
           building1.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding2);
-          building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding3);
+        if(level2==1) 
+        building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding3);
 
             if (point)
             {
@@ -685,7 +698,15 @@ int main()
                 point = true;
                 if (score < 5)
                     score++;
+                countt++;
             }
+            //sky
+
+            spare_angle = spare_angle + 0.0f;
+            glm::mat4 modelforsky=glm::mat4(1.0f);
+            scaleMatrix = glm::scale(identityMatrix, glm::vec3(17.0f, 15.0f, 15.0f));
+            modelforsky = glm::translate(identityMatrix, glm::vec3(0.0f, 5.0f, -66.0f)) *glm::rotate(identityMatrix, glm::radians(spare_angle), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::scale(identityMatrix, glm::vec3(50.0f, 40.0f, 30.0f));
+            sky1.drawSphereWithTexture(lightingShader, modelforsky);
 
             //sphere
             glm::mat4 modelForSphere = glm::mat4(1.0f);
@@ -700,6 +721,23 @@ int main()
                 
                 scoreboard.drawSphereWithTexture(lightingShader, modelForSphere2);
             }
+            if (score >= 4)
+            {
+                level2 = 1;
+                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                    , glm::vec3(5.0, 5.4f, -10.0)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5,0.6,1));
+                scorept.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+            }
+            if (score < 4) {
+                level2 = 0;
+                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                    , glm::vec3(5.0, 5.4f, -10.0)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.6, 1));
+                scorept1.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+
+            }
+            //printf("%d",score);
         }
 
         //sea(cubeVAO, lightingShader, model); tree(cubeVAO, lightingShader, model);
