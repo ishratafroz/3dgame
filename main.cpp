@@ -21,10 +21,12 @@
 #include "Cylinder1.h"
 #include "Pyramid.h"
 #include "CurvedRoad.h"
+//#include <irrKlang.h>
 //#include <SFML/Audio.hpp>
 #include <map>
 
 using namespace std;
+//using namespace irrklang;
 GLfloat a = 0, b = 0, c = 0, d = 0, e = 0;
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -51,6 +53,8 @@ long long nCr(int n, int r);
 void BezierCurve(double t, float xy[2], GLfloat ctrlpoints[], int L);
 unsigned int hollowBezier(GLfloat ctrlpoints[], int L);
 unsigned int loadCubemap(vector<std::string> faces);
+
+//ISoundEngine* engine = createIrrKlangDevice();
 
 glm::mat4 transforamtion(float tx, float ty, float tz, float sx, float sy, float sz) {
     glm::mat4 identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
@@ -83,6 +87,16 @@ vector <float> coordinates;
 vector <float> normals;
 vector <int> indices;
 vector <float> vertices;
+
+float s_ambient = 1;
+float s_diffuse = 1;
+float s_specular = 1;
+float p_ambient = 1;
+float p_diffuse = 1;
+float p_specular = 1;
+float d_ambient = 1;
+float d_diffuse = 1;
+float d_specular = 1;
 
 class point
 {
@@ -133,9 +147,16 @@ int score = 3;
 bool game = false;
 int level2 = 0;
 float plane_x = 0.0f;
-bool pLight = false;
-bool dLight = false;
-bool sLight = false;
+
+bool onOffToggle = true;
+bool ambientToggle = true;
+bool diffuseToggle = true;
+bool specularToggle = true;
+
+bool pointlightToggle = true;
+bool directionallightToggle = true;
+bool spotlightToggle = true;
+
 bool sphere_true = true;
 float spare_angle = 10.0f;
 
@@ -382,6 +403,9 @@ int main()
 
     Shader lightingShaderWithTexture("vertexShaderForPhongShadingWithTexture.vs", "fragmentShaderForPhongShadingWithTexture.fs");
     //Shader ourShader("vertexShader.vs", "fragmentShader.fs");
+    //ISound * sound= engine->play2D("gameover.mp3", false,false, true);
+    //engine->setSoundVolume(0.5f);
+    SpotLight spotlight[1];
     string diffuseMapPath = "untit1.png";
     string specularMapPath = "untit1.png";
     unsigned int diffMap = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -435,7 +459,7 @@ int main()
     string ssphere1 = "lavender.jfif";
     unsigned int diff6 = loadTexture(dsphere1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int spec6 = loadTexture(ssphere1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    
+
     Sphere2 sphere = Sphere2(0.3f, 36, 18, glm::vec3(1.0f, 0.75f, 0.79f), glm::vec3(1.0f, 0.75f, 0.79), glm::vec3(0.8f, 0.6f, 0.63), 32.0f, diff6, spec6, 0.0f, 0.0f, 1.0f, 1.0f);
 
     Pyramid pyramid("tree.jpg");
@@ -447,7 +471,7 @@ int main()
     int numSegments = 1000;
     float roadWidth = 1.0f;
     CurvedRoad cr("road.png", p0, p1, p2, p3, numSegments, roadWidth);
-   
+
     while (!glfwWindowShouldClose(window) && mainGameState == SPLASH_SCREEN) {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -520,7 +544,7 @@ int main()
     point_x3 = dis(gen);
 
 
-    
+
     while (!glfwWindowShouldClose(window) && mainGameState == MAIN_GAME)
     {
         // per-frame time logic
@@ -542,6 +566,12 @@ int main()
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
         lightingShader.setVec3("viewPos", camera.Position);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+        lightingShader.setMat4("projection", projection);
+        glm::mat4 view = camera.GetViewMatrix();
+
+        lightingShader.setMat4("view", view);
 
         // point light 1
         pointlight1.setUpPointLight(lightingShader);
@@ -552,44 +582,32 @@ int main()
         // point light 4
         pointlight4.setUpPointLight(lightingShader);
 
-       // lightingShaderWithTexture.use();
-        //lightingShaderWithTexture.setVec3("viewPos", camera.Position);
+        lightingShaderWithTexture.use();
+        lightingShaderWithTexture.setVec3("viewPos", camera.Position);
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         //glm::mat4 projection = glm::ortho(-2.0f, +2.0f, -1.5f, +1.5f, 0.1f, 100.0f);
         lightingShaderWithTexture.setMat4("projection", projection);
 
         // camera/view transformation
-        glm::mat4 view = camera.GetViewMatrix();
         //glm::mat4 view = basic_camera.createViewMatrix();
         lightingShaderWithTexture.setMat4("view", view);
-        pointlight1.setUpPointLight(lightingShader);
+        pointlight1.setUpPointLight(lightingShaderWithTexture);
         // point light 2
-        pointlight2.setUpPointLight(lightingShader);
+        pointlight2.setUpPointLight(lightingShaderWithTexture);
         // point light 3
-        pointlight3.setUpPointLight(lightingShader);
+        pointlight3.setUpPointLight(lightingShaderWithTexture);
         // point light 4
-        pointlight4.setUpPointLight(lightingShader);
+        pointlight4.setUpPointLight(lightingShaderWithTexture);
+
+
         lightingShader.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
         lightingShader.setVec3("diectionalLight.ambient", .5, .5, .5);
         lightingShader.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
         lightingShader.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
 
-        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-        {
-            lightingShader.setVec3("diectionalLight.diffuse", 0.0f, 0.0f, 0.0f);
-            lightingShader.setVec3("spotlight.diffuse", 0.0f, 0.0f, 0.0f);
-        }
-        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-        {
-            lightingShader.setVec3("diectionalLight.specular", 0.0f, 0.0f, 0.0f);
-            lightingShader.setVec3("spotlight.specular", 0.0f, 0.0f, 0.0f);
-        }
+        lightingShader.setBool("dlighton", directionallightToggle);
 
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-            lightingShader.setBool("dlighton", false);
-        //if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
-        lightingShader.setBool("pointlighton", true);
+
 
         lightingShader.setVec3("spotlight.position", -0.5, 1, -0.5);
         lightingShader.setVec3("spotlight.direction", 0, -1, 0);
@@ -601,22 +619,12 @@ int main()
         lightingShader.setFloat("spotlight.k_q", 0.032);
         lightingShader.setFloat("cos_theta", glm::cos(glm::radians(5.5f)));
 
-        if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-            lightingShader.setBool("spotlighton", false);
+
         lightingShader.use();
 
 
 
 
-        // pass projection matrix to shader (note that in this case it could change every frame)
-        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        //glm::mat4 projection = glm::ortho(-2.0f, +2.0f, -1.5f, +1.5f, 0.1f, 100.0f);
-        lightingShader.setMat4("projection", projection);
-
-        //camera/view transformation
-        view = camera.GetViewMatrix();
-        // glm::mat4 view = basic_camera.createViewMatrix();
-        lightingShader.setMat4("view", view);
 
         // Modelling Transformation
         glm::mat4 identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
@@ -629,19 +637,48 @@ int main()
         model = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
         lightingShader.setMat4("model", model);
         lightingShaderWithTexture.use();
-        
 
+        for (int i = 0; i < 4; i++) {
+
+            spotlight[i].position = glm::vec3(.5, 1.95, 4.5 - i * 3);
+            spotlight[i].Number = i;
+            spotlight[i].s_ambient = s_ambient;
+            spotlight[i].s_diffuse = s_diffuse;
+            spotlight[i].s_specular = s_specular;
+            spotlight[i].setUpspotLight(lightingShaderWithTexture);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            spotlight[i + 4].position = glm::vec3(-.5, 1.95, 4.5 - i * 3);
+            spotlight[i + 4].Number = i + 4;
+            spotlight[i + 4].s_ambient = s_ambient;
+            spotlight[i + 4].s_diffuse = s_diffuse;
+            spotlight[i + 4].s_specular = s_specular;
+            spotlight[i + 4].setUpspotLight(lightingShaderWithTexture);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        }
         lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.0f, 1.0f));
         lightingShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.0f, 1.0f));
         lightingShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
         lightingShader.setFloat("material.shininess", 32.0f);
 
-        lightingShaderWithTexture.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
+        lightingShaderWithTexture.setVec3("diectionalLight.direction", 0.0f, 6.0f, -10.0f);
         lightingShaderWithTexture.setVec3("diectionalLight.ambient", .5, .5, .5);
         lightingShaderWithTexture.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
         lightingShaderWithTexture.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
 
-        lightingShaderWithTexture.setBool("dlighton", true);
+        lightingShaderWithTexture.setBool("dlighton", directionallightToggle);
+
+
+        lightingShaderWithTexture.setVec3("emissionlight.position", -5, 8, -20);
+        lightingShaderWithTexture.setVec3("emissionlight.ambient", 0.2f, 0.2f, 0.2f);
+        lightingShaderWithTexture.setVec3("emissionlight.diffuse", 0.7f, 0.7f, 0.7f);
+        lightingShaderWithTexture.setVec3("emissionlight.specular", 1.0f, 1.0f, 1.0f);
+        lightingShaderWithTexture.setFloat("emissionlightk_c", 1);
+        lightingShaderWithTexture.setFloat("emissionlight.k_l", .09);
+        lightingShaderWithTexture.setFloat("emissionlight.k_q", .032);
+        lightingShaderWithTexture.setVec3("emissionlight.emission", 0.2f, 0.2f, 0.2f);
+        lightingShaderWithTexture.setBool("elighton", false);
+
+
 
         if (score == 0)
         {
@@ -652,6 +689,9 @@ int main()
             model = glm::mat4(1.0f);
             model = translateMatrix * scaleMatrix;
             gameover.drawCubeWithTexture(lightingShaderWithTexture, model);
+
+
+
         }
         if (score > 0)
         {
@@ -672,10 +712,10 @@ int main()
             glm::mat4 modelforgrass2 =
                 glm::translate(model, glm::vec3(-7.0, -0.95, block2 + flor)) *
                 glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
-           bed(cubeVAO, lightingShader, model);
+            bed(cubeVAO, lightingShader, model);
             //road
-           glm::mat4  modelforroad = transforamtion(-1, -.94, -2, 1, 1, 1);
-           modelforroad = modelforroad * glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            glm::mat4  modelforroad = transforamtion(-1, -.94, -2, 1, 1, 1);
+            modelforroad = modelforroad * glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
             cr.draw(lightingShaderWithTexture, modelforroad);
             //building texture
 
@@ -693,13 +733,13 @@ int main()
             beach(cubeVAO, lightingShader, model);
             grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass1);
             grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass2);
-            
+
             building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding1);
 
             glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
                 , glm::vec3(5.0, 5.4f, -10.0)) *
                 glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0));
-   
+
             building1.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding2);
             if (level2 == 1)
                 building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding3);
@@ -769,24 +809,24 @@ int main()
                 scoreboard.drawSphereWithTexture(lightingShaderWithTexture, modelForSphere2);
             }
             //tree
-           glm::mat4 modelfortree = transforamtion(5.8, 0.5, -12, 2, 2, 1);
+            glm::mat4 modelfortree = transforamtion(5.8, 0.5, -12, 2, 2, 1);
             pyramid.draw(lightingShaderWithTexture, modelfortree);
-           // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
             cylinder1.Draw(lightingShaderWithTexture, modelfortree);
 
-             modelfortree = transforamtion(6.8, 0, -20, 2, 2, 1);
+            modelfortree = transforamtion(6.8, 0, -20, 2, 2, 1);
             pyramid.draw(lightingShaderWithTexture, modelfortree);
-           // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
             cylinder1.Draw(lightingShaderWithTexture, modelfortree);
 
             modelfortree = transforamtion(-6.5, 0, -20, 2, 2, 1);
             pyramid.draw(lightingShaderWithTexture, modelfortree);
-           // // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            // // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
             cylinder1.Draw(lightingShaderWithTexture, modelfortree);
 
             modelfortree = transforamtion(-6.5, 0, -10, 2, 2, 1);
             pyramid.draw(lightingShaderWithTexture, modelfortree);
-           // // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            // // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
             cylinder1.Draw(lightingShaderWithTexture, modelfortree);
 
             //printf("%d",score);
@@ -838,12 +878,7 @@ int main()
         // point light 4
         pointlight4.setUpPointLight(lightingShaderWithTexture);
 
-        lightingShaderWithTexture.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
-        lightingShaderWithTexture.setVec3("diectionalLight.ambient", .5, .5, .5);
-        lightingShaderWithTexture.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
-        lightingShaderWithTexture.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
 
-        lightingShaderWithTexture.setBool("dlighton", true);
 
         glm::mat4 modelMatrixForContainer = glm::mat4(1.0f);
         glm::mat4 trns = glm::translate(identityMatrix, glm::vec3(0.2f, 0.0f, -5.48f));
@@ -860,6 +895,8 @@ int main()
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
@@ -1361,6 +1398,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window)
 {
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -1448,7 +1486,7 @@ void processInput(GLFWwindow* window)
         eyeY -= 2.5 * deltaTime;
         basic_camera.changeEye(eyeX, eyeY, eyeZ);
     }
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
     {
         pointlight1.turnOff();
         pointlight2.turnOff();
@@ -1456,82 +1494,152 @@ void processInput(GLFWwindow* window)
         pointlight4.turnOff();
 
     }
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-    {
-        pointlight1.turnOn();
-        pointlight2.turnOn();
-        pointlight3.turnOn();
-        pointlight4.turnOn();
-    }
-    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-    {
-        if (diffuseToggle)
-        {
-
-            pointlight1.turnDiffuseOff();
-            pointlight2.turnDiffuseOff();
-            pointlight3.turnDiffuseOff();
-            pointlight4.turnDiffuseOff();
-            diffuseToggle = !diffuseToggle;
-
-
-        }
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+        if (directionallightToggle)
+            directionallightToggle = false;
         else
-        {
+            directionallightToggle = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+        if (pointlightToggle) {
+            pointlightToggle = false;
+            p_ambient = 0;
+            p_diffuse = 0;
+            p_specular = 0;
+        }
 
-            pointlight1.turnDiffuseOn();
-            pointlight2.turnDiffuseOn();
-            pointlight3.turnDiffuseOn();
-            pointlight4.turnDiffuseOn();
-            diffuseToggle = !diffuseToggle;
+        else {
+            pointlightToggle = true;
+            p_ambient = 1;
+            p_diffuse = 1;
+            p_specular = 1;
         }
 
     }
-    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-    {
-        if (specularToggle)
-        {
-
-            pointlight1.turnSpecularOff();
-            pointlight2.turnSpecularOff();
-            pointlight3.turnSpecularOff();
-            pointlight4.turnSpecularOff();
-            specularToggle = !specularToggle;
-        }
-        else
-        {
-
-            pointlight1.turnSpecularOn();
-            pointlight2.turnSpecularOn();
-            pointlight3.turnSpecularOn();
-            pointlight4.turnSpecularOn();
-            specularToggle = !specularToggle;
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
+        if (spotlightToggle) {
+            spotlightToggle = false;
+            s_ambient = 0;
+            s_diffuse = 0;
+            s_specular = 0;
         }
 
+        else {
+            spotlightToggle = true;
+            s_ambient = 1;
+            s_diffuse = 1;
+            s_specular = 1;
+        }
+
+    }
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
+        if (ambientToggle) {
+            ambientToggle = false;
+            if (directionallightToggle) {
+                d_ambient = 0;
+            }
+            if (pointlightToggle) {
+                p_ambient = 0;
+            }
+
+            if (spotlightToggle) {
+                s_ambient = 0;
+            }
+
+        }
+
+        else {
+            ambientToggle = true;
+            if (directionallightToggle) {
+                d_ambient = 1;
+            }
+            if (pointlightToggle) {
+                p_ambient = 1;
+            }
+
+            if (spotlightToggle) {
+                s_ambient = 1;
+            }
+
+
+
+        }
+
+    }
+    if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) {
+        if (diffuseToggle) {
+            diffuseToggle = false;
+            if (directionallightToggle) {
+                d_diffuse = 0;
+            }
+            if (pointlightToggle) {
+                p_diffuse = 0;
+            }
+
+            if (spotlightToggle) {
+                s_diffuse = 0;
+            }
+
+
+
+        }
+
+        else {
+            diffuseToggle = true;
+            if (directionallightToggle) {
+                d_diffuse = 1;
+            }
+            if (pointlightToggle) {
+                p_diffuse = 1;
+            }
+
+            if (spotlightToggle) {
+                s_diffuse = 1;;
+            }
+
+
+
+        }
+
+    }
+    if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) {
+        if (specularToggle) {
+            specularToggle = false;
+            if (directionallightToggle) {
+                d_specular = 0;
+            }
+            if (pointlightToggle) {
+                p_specular = 0;
+            }
+
+            if (spotlightToggle) {
+                s_specular = 0;
+            }
+
+
+
+        }
+
+        else {
+            specularToggle = true;
+            if (directionallightToggle) {
+                d_specular = 1;
+            }
+            if (pointlightToggle) {
+                p_specular = 1;
+            }
+
+            if (spotlightToggle) {
+                s_specular = 1;
+            }
+
+
+
+        }
 
 
     }
-    if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-    {
-        pointlight1.turnAmbientOn();
-        pointlight2.turnAmbientOn();
-        pointlight3.turnAmbientOn();
-        pointlight4.turnAmbientOn();
-    }
-    if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
-    {
-        pointlight1.turnDiffuseOn();
-        pointlight2.turnDiffuseOn();
-        pointlight3.turnDiffuseOn();
-        pointlight4.turnDiffuseOn();
-    }
-    if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
-    {
-        pointlight1.turnSpecularOn();
-        pointlight2.turnSpecularOn();
-        pointlight3.turnSpecularOn();
-        pointlight4.turnSpecularOn();
-    }
+
 
     if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
     {
