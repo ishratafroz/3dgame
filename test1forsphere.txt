@@ -18,6 +18,9 @@
 #include "stb_image.h"
 #include "cube.h"
 #include "SpotLight.h"
+#include "Cylinder1.h"
+#include "Pyramid.h"
+#include "CurvedRoad.h"
 //#include <SFML/Audio.hpp>
 #include <map>
 
@@ -153,9 +156,9 @@ BasicCamera basic_camera(eyeX, eyeY, eyeZ, lookAtX, lookAtY, lookAtZ, V);
 
 // positions of the point lights
 glm::vec3 pointLightPositions[] = {
-    glm::vec3(2.0f,  2.00f,  0.0f),
+    glm::vec3(2.5f,  2.50f,  0.0f),
     glm::vec3(1.5f,  -1.5f,  0.0f),
-    glm::vec3(-2.0f,  2.0f,  0.0f),
+    glm::vec3(-2.50f,  2.5f,  0.0f),
     glm::vec3(-1.5f,  -1.5f,  0.0f)
 };
 //glm::vec3(-0.5, 1, -0.5)
@@ -247,7 +250,7 @@ int main()
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-   
+
     // glfw window creation
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "CSE 4208: Computer Graphics Laboratory", NULL, NULL);
 
@@ -374,7 +377,7 @@ int main()
     // note that we update the lamp's position attribute's stride to reflect the updated buffer data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    Sphere sphere = Sphere();
+    //Sphere sphere = Sphere();
     Cylinder cylinder = Cylinder();
 
     Shader lightingShaderWithTexture("vertexShaderForPhongShadingWithTexture.vs", "fragmentShaderForPhongShadingWithTexture.fs");
@@ -384,7 +387,7 @@ int main()
     unsigned int diffMap = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int specMap = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube = Cube(diffMap, specMap, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-    
+
     string dgameover = "gameover.jpg";
     string sgameover = "gameover.jpg";
     unsigned int diff1 = loadTexture(dgameover.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -408,8 +411,8 @@ int main()
     unsigned int diff4 = loadTexture(dbuild1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int spec4 = loadTexture(sbuild1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube building1 = Cube(diff4, spec4, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-    
-    
+
+
 
     string dcscore = "white.png";
     string scscore = "white1.png";
@@ -417,30 +420,40 @@ int main()
     unsigned int spec7 = loadTexture(scscore.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube scorept = Cube(diff7, diff7, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     Cube scorept1 = Cube(spec7, spec7, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-    string dsphere = "wall.jpg";
-    string ssphere = "wall.jpg";
+    string dsphere = "humann.jpg";
+    string ssphere = "humann.jpg";
     unsigned int diff5 = loadTexture(dsphere.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int spec5 = loadTexture(ssphere.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Sphere2 scoreboard = Sphere2(0.3f, 36, 18, glm::vec3(1.0f, 0.75f, 0.79f), glm::vec3(1.0f, 0.75f, 0.79), glm::vec3(0.8f, 0.6f, 0.63), 32.0f, diff5, spec5, 0.0f, 0.0f, 1.0f, 1.0f);
 
     string sky = "sky.jpeg";
     unsigned int skyspec = loadTexture(sky.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    Sphere2  sky1 = Sphere2(1.0f, 144, 72, glm::vec3(0,0.4,0.9), glm::vec3(0, 0.4, 0.9), glm::vec3(0, 0.4, 0.9), 32.0f, skyspec, skyspec, 0.0f, 0.0f, 1.0f, 1.0f);
+    Sphere2  sky1 = Sphere2(1.0f, 144, 72, glm::vec3(0, 0.4, 0.9), glm::vec3(0, 0.4, 0.9), glm::vec3(0, 0.4, 0.9), 32.0f, skyspec, skyspec, 0.0f, 0.0f, 1.0f, 1.0f);
 
 
-    string dsphere1 = "golok.jpg";
-    string ssphere1 = "golok.jpg";
+    string dsphere1 = "lavender.jfif";
+    string ssphere1 = "lavender.jfif";
     unsigned int diff6 = loadTexture(dsphere1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int spec6 = loadTexture(ssphere1.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
-    //Sphere sphere = Sphere(0.3f, 36, 18, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f, diff5, spec5, 0.0f, 0.0f, 1.0f, 1.0f, diff6, spec6);
     
-    
+    Sphere2 sphere = Sphere2(0.3f, 36, 18, glm::vec3(1.0f, 0.75f, 0.79f), glm::vec3(1.0f, 0.75f, 0.79), glm::vec3(0.8f, 0.6f, 0.63), 32.0f, diff6, spec6, 0.0f, 0.0f, 1.0f, 1.0f);
+
+    Pyramid pyramid("tree.jpg");
+    Cylinder1 cylinder1(.1, .1, 1, 16, 20, "treebase.png");
+    glm::vec3 p0(0, 3, 0);
+    glm::vec3 p1(0, 2, 0);
+    glm::vec3 p2(8, 0, 0);
+    glm::vec3 p3(8, -18, 0);
+    int numSegments = 1000;
+    float roadWidth = 1.0f;
+    CurvedRoad cr("road.png", p0, p1, p2, p3, numSegments, roadWidth);
+   
     while (!glfwWindowShouldClose(window) && mainGameState == SPLASH_SCREEN) {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         lightingShaderWithTexture.use();
         lightingShaderWithTexture.setVec3("viewPos", camera.Position);
-        
+
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         //glm::mat4 projection = glm::ortho(-2.0f, +2.0f, -1.5f, +1.5f, 0.1f, 100.0f);
         lightingShaderWithTexture.setMat4("projection", projection);
@@ -467,7 +480,13 @@ int main()
         pointlight3.setUpPointLight(lightingShaderWithTexture);
         // point light 4
         pointlight4.setUpPointLight(lightingShaderWithTexture);
-        
+        lightingShaderWithTexture.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
+        lightingShaderWithTexture.setVec3("diectionalLight.ambient", .5, .5, .5);
+        lightingShaderWithTexture.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
+        lightingShaderWithTexture.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
+
+        lightingShaderWithTexture.setBool("dlighton", true);
+
         identityMatrix = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4  alTogether;
         translateMatrix = glm::translate(identityMatrix, glm::vec3(translate_X, translate_Y, translate_Z));
@@ -479,7 +498,7 @@ int main()
         float baseHeight = 8.1; float width = 3;  float length = 2;
         model = glm::mat4(1.0f);
         //Ground
-        model = transforamtion(-6, -3, -10, width*4 , baseHeight, length);
+        model = transforamtion(-6, -3, -10, width * 4, baseHeight, length);
         model = alTogether * model;
         cube.drawCubeWithTexture(lightingShaderWithTexture, model);
         ourShader.use();
@@ -500,7 +519,8 @@ int main()
     point_x2 = dis(gen);
     point_x3 = dis(gen);
 
-   
+
+    
     while (!glfwWindowShouldClose(window) && mainGameState == MAIN_GAME)
     {
         // per-frame time logic
@@ -517,7 +537,7 @@ int main()
         // ------
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
 
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
@@ -532,8 +552,8 @@ int main()
         // point light 4
         pointlight4.setUpPointLight(lightingShader);
 
-        lightingShaderWithTexture.use();
-        lightingShaderWithTexture.setVec3("viewPos", camera.Position);
+       // lightingShaderWithTexture.use();
+        //lightingShaderWithTexture.setVec3("viewPos", camera.Position);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         //glm::mat4 projection = glm::ortho(-2.0f, +2.0f, -1.5f, +1.5f, 0.1f, 100.0f);
@@ -550,8 +570,8 @@ int main()
         pointlight3.setUpPointLight(lightingShader);
         // point light 4
         pointlight4.setUpPointLight(lightingShader);
-        lightingShader.setVec3("diectionalLight.direction", 0.0f, 3.0f, 0.0f);
-        lightingShader.setVec3("diectionalLight.ambient", .2, .2, .2);
+        lightingShader.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
+        lightingShader.setVec3("diectionalLight.ambient", .5, .5, .5);
         lightingShader.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
         lightingShader.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
 
@@ -585,7 +605,7 @@ int main()
             lightingShader.setBool("spotlighton", false);
         lightingShader.use();
 
-       
+
 
 
         // pass projection matrix to shader (note that in this case it could change every frame)
@@ -608,15 +628,20 @@ int main()
         scaleMatrix = glm::scale(identityMatrix, glm::vec3(scale_X, scale_Y, scale_Z));
         model = translateMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * scaleMatrix;
         lightingShader.setMat4("model", model);
-         lightingShaderWithTexture.use();
+        lightingShaderWithTexture.use();
+        
 
+        lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.0f, 1.0f));
+        lightingShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.0f, 1.0f));
+        lightingShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        lightingShader.setFloat("material.shininess", 32.0f);
 
-         lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.0f, 1.0f));
-         lightingShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.0f, 1.0f));
-         lightingShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-         lightingShader.setFloat("material.shininess", 32.0f);
+        lightingShaderWithTexture.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
+        lightingShaderWithTexture.setVec3("diectionalLight.ambient", .5, .5, .5);
+        lightingShaderWithTexture.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
+        lightingShaderWithTexture.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
 
-         
+        lightingShaderWithTexture.setBool("dlighton", true);
 
         if (score == 0)
         {
@@ -628,7 +653,7 @@ int main()
             model = translateMatrix * scaleMatrix;
             gameover.drawCubeWithTexture(lightingShaderWithTexture, model);
         }
-        if(score>0)
+        if (score > 0)
         {
             float baseHeight = 4.0f;
             float width = 2.0f;
@@ -641,35 +666,61 @@ int main()
             float b3_z = block2 + flor - 5.0f;
 
             //texture
-            glm::mat4 modelforgrass1 = model * 
+            glm::mat4 modelforgrass1 = model *
                 glm::translate(model, glm::vec3(-7.0, -0.95, block1 + flor)) *
                 glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
-        glm::mat4 modelforgrass2=  
-            glm::translate(model, glm::vec3(-7.0, -0.95, block2 + flor)) * 
-            glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
-            bed(cubeVAO, lightingShader, model);
-             //building texture
+            glm::mat4 modelforgrass2 =
+                glm::translate(model, glm::vec3(-7.0, -0.95, block2 + flor)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(15.0, 0.001, 20.5));
+           bed(cubeVAO, lightingShader, model);
+            //road
+           glm::mat4  modelforroad = transforamtion(-1, -.94, -2, 1, 1, 1);
+           modelforroad = modelforroad * glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            cr.draw(lightingShaderWithTexture, modelforroad);
+            //building texture
 
-           glm::mat4 modelforbuilding1=glm::translate(glm::mat4(1.0f)
-               , glm::vec3(b1_x, -1.0f,b1_z)) *
-               glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
-          glm::mat4 modelforbuilding2 = glm::translate(glm::mat4(1.0f),
-              glm::vec3(b2_x, -1.0f, b2_z)) *
-              glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
-          //float b3_x = point_x3 - 3.5f;
-          //float b3_z = block2 + flor - 1.0f;
-          glm::mat4 modelforbuilding3 = 
- glm::translate(glm::mat4(1.0f), glm::vec3(b3_x, -1.0f, b3_z))
-    * glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
-         beach(cubeVAO, lightingShader, model);
-          grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass1);
-          grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass2);
+            glm::mat4 modelforbuilding1 = glm::translate(glm::mat4(1.0f)
+                , glm::vec3(b1_x, -1.0f, b1_z)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
+            glm::mat4 modelforbuilding2 = glm::translate(glm::mat4(1.0f),
+                glm::vec3(b2_x, -1.0f, b2_z)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
+            //float b3_x = point_x3 - 3.5f;
+            //float b3_z = block2 + flor - 1.0f;
+            glm::mat4 modelforbuilding3 =
+                glm::translate(glm::mat4(1.0f), glm::vec3(b3_x, -1.0f, b3_z))
+                * glm::scale(glm::mat4(1.0f), glm::vec3(width, baseHeight, length));
+            beach(cubeVAO, lightingShader, model);
+            grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass1);
+            grass.drawCubeWithTexture(lightingShaderWithTexture, modelforgrass2);
+            
+            building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding1);
 
-          building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding1);
-          building1.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding2);
-        if(level2==1) 
-        building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding3);
+            glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                , glm::vec3(5.0, 5.4f, -10.0)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0));
+   
+            building1.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding2);
+            if (level2 == 1)
+                building.drawCubeWithTexture(lightingShaderWithTexture, modelforbuilding3);
 
+            if (score >= 4)
+            {
+                level2 = 1;
+                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                    , glm::vec3(3.2, 4.8f, -8.0)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0.1));
+                scorept.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+            }
+            if (score < 4) {
+                level2 = 0;
+                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
+                    , glm::vec3(3.2, 4.8f, -8.0)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0.1));
+                scorept1.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+
+
+            }
             if (point)
             {
                 std::random_device rd;
@@ -699,40 +750,45 @@ int main()
             //sky
 
             spare_angle = spare_angle + 0.0f;
-            glm::mat4 modelforsky=glm::mat4(1.0f);
+            glm::mat4 modelforsky = glm::mat4(1.0f);
             scaleMatrix = glm::scale(identityMatrix, glm::vec3(17.0f, 15.0f, 15.0f));
-            modelforsky = glm::translate(identityMatrix, glm::vec3(0.0f, 5.0f, -66.0f)) *glm::rotate(identityMatrix, glm::radians(spare_angle), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::scale(identityMatrix, glm::vec3(50.0f, 40.0f, 30.0f));
-            sky1.drawSphereWithTexture(lightingShader, modelforsky);
+            modelforsky = glm::translate(identityMatrix, glm::vec3(0.0f, -4.0f, -66.0f)) * glm::rotate(identityMatrix, glm::radians(spare_angle), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::scale(identityMatrix, glm::vec3(50.0f, 55.0f, 30.0f));
+            sky1.drawSphereWithTexture(lightingShaderWithTexture, modelforsky);
 
             //sphere
             glm::mat4 modelForSphere = glm::mat4(1.0f);
             modelForSphere = glm::translate(model, glm::vec3(randomVal, 0.0f, zz));
-            sphere.drawSphere(lightingShader, modelForSphere);
+            sphere.drawSphereWithTexture(lightingShaderWithTexture, modelForSphere);
             float xx = 0.0;
             for (int i = 0; i < score; i++)
             {
                 xx += 0.7;
                 glm::mat4 modelForSphere2 = glm::mat4(1.0f);
-                modelForSphere2 = glm::translate(model, glm::vec3(xx + 4.5f, 5.0f, -10.0));
-                
-                scoreboard.drawSphereWithTexture(lightingShader, modelForSphere2);
-            }
-            if (score >= 4)
-            {
-                level2 = 1;
-                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
-                    , glm::vec3(5.0, 5.4f, -10.0)) *
-                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5,0.8,0));
-                scorept.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
-            }
-            if (score < 4) {
-                level2 = 0;
-                glm::mat4 modelforscore = glm::translate(glm::mat4(1.0f)
-                    , glm::vec3(5.0, 5.4f, -10.0)) *
-                    glm::scale(glm::mat4(1.0f), glm::vec3(2.5, 0.8, 0));
-                scorept1.drawCubeWithTexture(lightingShaderWithTexture, modelforscore);
+                modelForSphere2 = glm::translate(model, glm::vec3(xx + 2.5f, 4.15f, -7.0));
 
+                scoreboard.drawSphereWithTexture(lightingShaderWithTexture, modelForSphere2);
             }
+            //tree
+           glm::mat4 modelfortree = transforamtion(5.8, 0.5, -12, 2, 2, 1);
+            pyramid.draw(lightingShaderWithTexture, modelfortree);
+           // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            cylinder1.Draw(lightingShaderWithTexture, modelfortree);
+
+             modelfortree = transforamtion(6.8, 0, -20, 2, 2, 1);
+            pyramid.draw(lightingShaderWithTexture, modelfortree);
+           // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            cylinder1.Draw(lightingShaderWithTexture, modelfortree);
+
+            modelfortree = transforamtion(-6.5, 0, -20, 2, 2, 1);
+            pyramid.draw(lightingShaderWithTexture, modelfortree);
+           // // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            cylinder1.Draw(lightingShaderWithTexture, modelfortree);
+
+            modelfortree = transforamtion(-6.5, 0, -10, 2, 2, 1);
+            pyramid.draw(lightingShaderWithTexture, modelfortree);
+           // // modelfortree = transforamtion(0, 0, 0, 1, 1, 1);
+            cylinder1.Draw(lightingShaderWithTexture, modelfortree);
+
             //printf("%d",score);
         }
 
@@ -782,6 +838,13 @@ int main()
         // point light 4
         pointlight4.setUpPointLight(lightingShaderWithTexture);
 
+        lightingShaderWithTexture.setVec3("diectionalLight.direction", 0.0f, 5.0f, 0.0f);
+        lightingShaderWithTexture.setVec3("diectionalLight.ambient", .5, .5, .5);
+        lightingShaderWithTexture.setVec3("diectionalLight.diffuse", .8f, .8f, .8f);
+        lightingShaderWithTexture.setVec3("diectionalLight.specular", 1.0f, 1.0f, 1.0f);
+
+        lightingShaderWithTexture.setBool("dlighton", true);
+
         glm::mat4 modelMatrixForContainer = glm::mat4(1.0f);
         glm::mat4 trns = glm::translate(identityMatrix, glm::vec3(0.2f, 0.0f, -5.48f));
 
@@ -789,11 +852,11 @@ int main()
         modelMatrixForContainer = trns * scl;
         // cube.drawCubeWithTexture(lightingShaderWithTexture, modelMatrixForContainer);
 
-        glBindVertexArray(bezierVAO);
-        glDrawElements(GL_TRIANGLES,                    // primitive type
-            (unsigned int)indices.size(),          // # of indices
-            GL_UNSIGNED_INT,                 // data type
-            (void*)0);
+        //glBindVertexArray(bezierVAO);
+        //glDrawElements(GL_TRIANGLES,                    // primitive type
+        //    (unsigned int)indices.size(),          // # of indices
+        //    GL_UNSIGNED_INT,                 // data type
+        //    (void*)0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -909,22 +972,22 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
     glm::mat4 translate2 = glm::mat4(1.0f);
     glm::mat4 scale = glm::mat4(1.0f);
     scale = glm::scale(model, glm::vec3(width, baseHeight, length));
-     translate = glm::translate(model, glm::vec3(-7.0, -1.0, block1 + flor));
+    translate = glm::translate(model, glm::vec3(-7.0, -1.0, block1 + flor));
     model = alTogether * translate * scale;
-//drawCube(cubeVAO, lightingShader, model, 0.0, 1.0, 0.0); 
-    
+    //drawCube(cubeVAO, lightingShader, model, 0.0, 1.0, 0.0); 
+
     model = glm::mat4(1.0f);
     translate = glm::translate(model, glm::vec3(-7.0, -1.0, block2 + flor));
     model = translate * scale;
-  //  drawCube(cubeVAO, lightingShader, model, 0.0, 1.0, 0.0);
-    //building
+    //  drawCube(cubeVAO, lightingShader, model, 0.0, 1.0, 0.0);
+      //building
     baseHeight = 4.0f;
     width = 2.0f;
     length = 2.0f;
     model = glm::mat4(1.0f);
     float b1_x = point_x + 1.0f;
     float b1_z = block1 + flor + 1.0f;
- 
+
 
 
     if (b1_x <= plane_x && b1_x + 2.0f >= plane_x)
@@ -958,8 +1021,8 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
                 plane_x += 5.0f;
             printf("%d\n", score);
         }
-       
-        
+
+
     }
     else if (b1_x <= plane_x - 0.5f && b1_x + 2.0f >= plane_x - 0.5)
     {
@@ -971,7 +1034,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
                 if (score > 0)
                 {
                     score--;
-                    
+
                 }
                 num = cnt;
             }
@@ -993,7 +1056,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
                 if (score > 0)
                 {
                     score--;
-                   
+
                 }
                 num = cnt;
             }
@@ -1015,7 +1078,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
                 if (score > 0)
                 {
                     score--;
-                    
+
                 }
                 num = cnt;
             }
@@ -1036,7 +1099,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1061,7 +1124,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--; 
+                    score--;
                 }
                 num = cnt;
             }
@@ -1083,7 +1146,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1104,7 +1167,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1125,7 +1188,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1146,7 +1209,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1158,7 +1221,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             printf("%d\n", score);
         }
     }
-    
+
 
 
 
@@ -1175,7 +1238,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1197,7 +1260,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1218,7 +1281,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1239,7 +1302,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1260,7 +1323,7 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
             {
                 if (score > 0)
                 {
-                    score--;  
+                    score--;
                 }
                 num = cnt;
             }
@@ -1273,24 +1336,24 @@ void beach(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether)
         }
     }
 
-   /*
-    scale = glm::scale(model, glm::vec3(0.1f, 5.1f, 0.1f));
-    translate = glm::translate(model, glm::vec3(plane_x-1.5f, -2.0f, -6.5f));
-    model = translate * scale;
-    drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
     /*
-    model = glm::mat4(1.0f);
-    scale = glm::scale(model, glm::vec3(width, baseHeight, length));
-    translate = glm::translate(model, glm::vec3(b2_x, -1.0f, b2_z));
-    model = translate * scale;
-    drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
+     scale = glm::scale(model, glm::vec3(0.1f, 5.1f, 0.1f));
+     translate = glm::translate(model, glm::vec3(plane_x-1.5f, -2.0f, -6.5f));
+     model = translate * scale;
+     drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
+     /*
+     model = glm::mat4(1.0f);
+     scale = glm::scale(model, glm::vec3(width, baseHeight, length));
+     translate = glm::translate(model, glm::vec3(b2_x, -1.0f, b2_z));
+     model = translate * scale;
+     drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
 
-    model = glm::mat4(1.0f);
-    scale = glm::scale(model, glm::vec3(width, baseHeight, length));
-    translate = glm::translate(model, glm::vec3(b3_x, -1.0f, b3_z));
-    model = translate * scale;
-    drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
-    */
+     model = glm::mat4(1.0f);
+     scale = glm::scale(model, glm::vec3(width, baseHeight, length));
+     translate = glm::translate(model, glm::vec3(b3_x, -1.0f, b3_z));
+     model = translate * scale;
+     drawCube(cubeVAO, lightingShader, model, 1, 0.2, 0.4f);
+     */
 
 }
 
@@ -1731,38 +1794,6 @@ unsigned int loadTexture(char const* path, GLenum textureWrappingModeS, GLenum t
         std::cout << "Texture failed to load at path: " << path << std::endl;
         stbi_image_free(data);
     }
-
-    return textureID;
-}
-unsigned int loadCubemap(vector<std::string> faces)
-{
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-    int width, height, nrChannels;
-    for (unsigned int i = 0; i < faces.size(); i++)
-    {
-        stbi_set_flip_vertically_on_load(true);
-
-        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            stbi_image_free(data);
-            cout << "done" << endl;
-        }
-        else
-        {
-            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
-            stbi_image_free(data);
-        }
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     return textureID;
 }
